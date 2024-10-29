@@ -1,4 +1,5 @@
 /Users/palakorn/projects/lazicode-workflow/src/main/java/com/lazicode/workflow/Main.java
+/Users/palakorn/projects/lazicode-workflow/src/main/java/com/lazicode/workflow/exceptions/InvalidOperatorPlacementException.java
 /Users/palakorn/projects/lazicode-workflow/src/main/java/com/lazicode/workflow/expressions/Expression.java
 /Users/palakorn/projects/lazicode-workflow/src/main/java/com/lazicode/workflow/expressions/LogicExpression.java
 /Users/palakorn/projects/lazicode-workflow/src/main/java/com/lazicode/workflow/expressions/MathExpression.java

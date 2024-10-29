@@ -6,5 +6,6 @@ com/lazicode/workflow/interfaces/OutputAble.class
 com/lazicode/workflow/expressions/LogicExpression.class
 com/lazicode/workflow/interfaces/ContainerAble.class
 com/lazicode/workflow/tasks/Task.class
+com/lazicode/workflow/exceptions/InvalidOperatorPlacementException.class
 com/lazicode/workflow/expressions/Expression.class
 com/lazicode/workflow/Main.class
