@@ -29,28 +29,19 @@ public class LogicExpression extends Expression {
                                 "Invalid expression type, allow only valid infix or postfix logical expressions.");
         }
         if (expressionType.equals("postfix")) {
-            validateExpression(expressionString, SUPPORTED_OPERATORS); // Validate before proceeding
+            validatePostfixExpression(expressionString, SUPPORTED_OPERATORS); // Validate before proceeding
             infixExpression = convertPostfixToInfix(expressionString); // Convert and store the infix expression
             postfixExpression = expressionString; // Store the original postfix expression
         }    
         else {
             postfixExpression = convertInfixToPostfix(expressionString); // Convert and store the infix expression
-            validateExpression(postfixExpression, SUPPORTED_OPERATORS); // Validate before proceeding
+            validatePostfixExpression(postfixExpression, SUPPORTED_OPERATORS); // Validate before proceeding
             infixExpression = convertPostfixToInfix(postfixExpression); // Convert and store the infix expression beautifully
         }
         
     }
 
-    /**
-     * Cleanses multiple spaces in the expression, reducing them to a single space.
-     *
-     * @param expression The original expression string with potential extra spaces
-     * @return A string with extra spaces removed, leaving only single spaces
-     *         between tokens
-     */
-    private String normalizeSpaces(String expression) {
-        return expression.trim().replaceAll("\\s+", " ");
-    }
+
 
     @Override
     protected boolean isOperand(String token) {

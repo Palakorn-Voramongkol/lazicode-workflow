@@ -149,6 +149,8 @@ public abstract class Expression implements JSONPersistable {
         }
     }
 
+
+
     /**
      * Returns the cached output of the expression calculation.
      *
@@ -221,6 +223,18 @@ public abstract class Expression implements JSONPersistable {
      */
     protected abstract boolean isLeftAssociative(String operator);
 
+
+    /**
+     * Cleanses multiple spaces in the expression, reducing them to a single space.
+     *
+     * @param expression The original expression string with potential extra spaces
+     * @return A string with extra spaces removed, leaving only single spaces
+     *         between tokens
+     */
+    protected String normalizeSpaces(String expression) {
+        return expression.trim().replaceAll("\\s+", " ");
+    }
+
     /**
      * Determines if an expression is infix, postfix, or unknown.
      *
@@ -272,13 +286,13 @@ public abstract class Expression implements JSONPersistable {
     }
 
     /**
-     * Validates the format of a given expression.
+     * Validates the Postfix format of a given expression.
      *
      * @param expressionString The expression string to validate.
      * @param SUPPORTED_OPERATORS Set of supported operators.
      * @throws IllegalArgumentException If the expression is invalid.
      */
-    protected void validateExpression(String expressionString, Set<String> SUPPORTED_OPERATORS) {
+    protected void validatePostfixExpression(String expressionString, Set<String> SUPPORTED_OPERATORS) {
         if (expressionString == null || expressionString.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid expression: Expression cannot be empty.");
         }

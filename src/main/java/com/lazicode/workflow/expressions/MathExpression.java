@@ -43,12 +43,12 @@ public class MathExpression extends Expression {
                     "Invalid expression type, allow only valid infix or postfix mathematical expressions.");
         }
         if (expressionType.equals("postfix")) {
-            validateExpression(expressionString, SUPPORTED_OPERATORS); // Validate before proceeding
+            validatePostfixExpression(expressionString, SUPPORTED_OPERATORS); // Validate before proceeding
             infixExpression = convertPostfixToInfix(expressionString); // Convert and store the infix expression
             postfixExpression = expressionString; // Store the original postfix expression
         } else { // infix
             postfixExpression = convertInfixToPostfix(expressionString); // Convert infix to postfix
-            validateExpression(postfixExpression, SUPPORTED_OPERATORS); // Validate the postfix expression
+            validatePostfixExpression(postfixExpression, SUPPORTED_OPERATORS); // Validate the postfix expression
             infixExpression = convertPostfixToInfix(postfixExpression); // Convert back to infix for storage
         }
     }
