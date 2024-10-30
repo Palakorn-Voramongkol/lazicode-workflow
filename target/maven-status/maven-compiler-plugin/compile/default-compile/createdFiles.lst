@@ -1,5 +1,4 @@
 com/lazicode/workflow/interfaces/JSONPersistable.class
-com/lazicode/workflow/expressions/MathExpression.class
 com/lazicode/workflow/node/Node.class
 com/lazicode/workflow/interfaces/InputAble.class
 com/lazicode/workflow/interfaces/OutputAble.class

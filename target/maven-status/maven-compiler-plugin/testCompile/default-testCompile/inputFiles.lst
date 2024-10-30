@@ -1,2 +1,4 @@
-/Users/palakorn/projects/lazicode-workflow/src/test/java/com/lazicode/workflow/expressions/LogicExpressionShortCircuitEnabledTest.java
-/Users/palakorn/projects/lazicode-workflow/src/test/java/com/lazicode/workflow/expressions/MathExpressionTest.java
+/Users/palakorn/projects/lazicode-workflow/src/test/java/com/lazicode/workflow/expressions/LogicExpressionInfixConversionTest.java
+/Users/palakorn/projects/lazicode-workflow/src/test/java/com/lazicode/workflow/expressions/LogicExpressionPrivateMethodTest.java
+/Users/palakorn/projects/lazicode-workflow/src/test/java/com/lazicode/workflow/expressions/LogicExpressionSpaceNormalizationTest.java
+/Users/palakorn/projects/lazicode-workflow/src/test/java/com/lazicode/workflow/expressions/NormalLogicExpressionTest.java

@@ -1,2 +1,4 @@
-com/lazicode/workflow/expressions/LogicExpressionShortCircuitEnabledTest.class
-com/lazicode/workflow/expressions/MathExpressionTest.class
+com/lazicode/workflow/expressions/NormalLogicExpressionTest.class
+com/lazicode/workflow/expressions/LogicExpressionPrivateMethodTest.class
+com/lazicode/workflow/expressions/LogicExpressionInfixConversionTest.class
+com/lazicode/workflow/expressions/LogicExpressionSpaceNormalizationTest.class

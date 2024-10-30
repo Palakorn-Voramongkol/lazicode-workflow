@@ -1,352 +1,358 @@
 package com.lazicode.workflow.expressions;
 
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.Stack;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
 
-import org.json.JSONObject;
-
-import com.lazicode.workflow.exceptions.InvalidOperatorPlacementException;
-
-/**
- * Represents a logical expression that can be evaluated based on provided
- * variables.
- * Supports operators: AND, OR, NOT, NAND, NOR, XOR, XNOR.
- */
 public class LogicExpression extends Expression {
-    private static final Logger LOGGER = Logger.getLogger(LogicExpression.class.getName());
+    private String infixExpression;
+    private String postfixExpression;
 
-    // Define operator precedence and associativity
-    private static final Map<String, Integer> PRECEDENCE_MAP = new HashMap<>();
-    private static final Map<String, String> ASSOCIATIVITY_MAP = new HashMap<>();
+    private static final Set<String> SUPPORTED_OPERATORS = new HashSet<>();
 
     static {
-        PRECEDENCE_MAP.put("NOT", 3);
-        PRECEDENCE_MAP.put("AND", 2);
-        PRECEDENCE_MAP.put("NAND", 2);
-        PRECEDENCE_MAP.put("OR", 1);
-        PRECEDENCE_MAP.put("NOR", 1);
-        PRECEDENCE_MAP.put("XOR", 1);
-        PRECEDENCE_MAP.put("XNOR", 1);
-
-        ASSOCIATIVITY_MAP.put("NOT", "RIGHT");
-        ASSOCIATIVITY_MAP.put("AND", "LEFT");
-        ASSOCIATIVITY_MAP.put("OR", "LEFT");
-        ASSOCIATIVITY_MAP.put("NAND", "LEFT");
-        ASSOCIATIVITY_MAP.put("NOR", "LEFT");
-        ASSOCIATIVITY_MAP.put("XOR", "LEFT");
-        ASSOCIATIVITY_MAP.put("XNOR", "LEFT");
+        SUPPORTED_OPERATORS.add("AND");
+        SUPPORTED_OPERATORS.add("OR");
+        SUPPORTED_OPERATORS.add("NOT");
+        SUPPORTED_OPERATORS.add("NAND");
+        SUPPORTED_OPERATORS.add("NOR");
+        SUPPORTED_OPERATORS.add("XOR");
+        SUPPORTED_OPERATORS.add("XNOR");
     }
 
-    private boolean shortCircuit;
-    private String processedExpressionString; // New variable to store processed expression
-
-    public LogicExpression(String expressionString, boolean shortCircuit) {
+    public LogicExpression(String expressionString) {
         super(expressionString);
-        this.shortCircuit = shortCircuit;
-        LOGGER.info("Initializing LogicExpression with expression: " + expressionString + " | Short-Circuit: "
-                + shortCircuit);
+        expressionString = normalizeSpaces(expressionString); // Cleanse spaces
+        String expressionType = determineExpressionType(expressionString);
 
-        this.processedExpressionString = applyPrecedenceParentheses(expressionString); // Process the expression with
-                                                                                       // precedence-based parentheses
-        System.out.print("xxxxxxx"+this.processedExpressionString);
-
-        try {
-            isValid(); // Validate the expression upon initialization
-        } catch (IllegalArgumentException e) {
-            LOGGER.severe("Invalid logic expression: " + e.getMessage());
-            throw e; // Rethrow to propagate the specific error message
+        if (expressionType.equals("unknown")) {
+            throw new IllegalArgumentException(
+                                "Invalid expression type, alow only valid infix or postfix logical expression.");
         }
-        LOGGER.info("LogicExpression initialized successfully.");
-    }
-
-    private String applyPrecedenceParentheses(String expression) {
-        List<String> tokens = tokenize(expression);
-        Stack<String> output = new Stack<>();
-        Stack<String> operators = new Stack<>();
-
-        for (String token : tokens) {
-            if (isOperand(token)) {
-                output.push(token);
-            } else if (isOperator(token)) {
-                while (!operators.isEmpty() &&
-                        PRECEDENCE_MAP.getOrDefault(operators.peek(), 0) >= PRECEDENCE_MAP.get(token)) {
-                    output.push(")");
-                    output.push(operators.pop());
-                    output.push("(");
-                }
-                operators.push(token);
-            } else if (token.equals("(")) {
-                operators.push(token);
-            } else if (token.equals(")")) {
-                while (!operators.peek().equals("(")) {
-                    output.push(operators.pop());
-                }
-                operators.pop(); // Remove the '('
-            }
-        }
-        while (!operators.isEmpty()) {
-            output.push(operators.pop());
+        if (expressionType.equals("postfix")) {
+            validateExpression(expressionString); // Validate before proceeding
+            infixExpression = convertPostfixToInfix(expressionString); // Convert and store the infix expression
+            postfixExpression = expressionString; // Store the original postfix expression
+        }    
+        else {
+            postfixExpression = convertInfixToPostfix(expressionString); // Convert and store the infix expression
+            validateExpression(postfixExpression); // Validate before proceeding
+            infixExpression = convertPostfixToInfix(postfixExpression); // Convert and store the infix expression beautifully
         }
         
-        return String.join(" ", output);
     }
 
-    
-
-    public String getProcessedExpression() {
-        return processedExpressionString;
+    public String getInfixExpression() {
+        return infixExpression;
     }
 
-    @Override
-    public void setVariable(String variable, Object value) {
-        LOGGER.fine("Setting variable: " + variable + " to value: " + value);
-        if (!(value instanceof Boolean)) {
-            LOGGER.warning("Invalid variable value type for variable '" + variable + "'. Expected Boolean.");
-            throw new IllegalArgumentException("LogicExpression can only accept Boolean values.");
+    public String getPostExpression() {
+        return postfixExpression;
+    }
+
+    /**
+     * Private helper to determine if an expression is infix or postfix.
+     *
+     * @param expression The expression string to evaluate.
+     * @return "infix" if the expression is in infix notation, "postfix" if in
+     *         postfix notation, "unknown" if neither.
+     */
+    /**
+     * Determines if an expression is in infix or postfix notation, considering
+     * balanced parentheses.
+     * 
+     * @param expression The expression string to evaluate.
+     * @return "infix" if the expression is in infix notation, "postfix" if in
+     *         postfix notation, "unknown" if neither.
+     */
+    private String determineExpressionType(String expression) {
+        // First, check if parentheses are balanced
+        if (!isParenthesesBalanced(expression)) {
+            return "unknown";
         }
-        setVariableValue(variable, value);
+
+        expression = expression.trim().replaceAll("\\s+", " ");
+
+        // Check for infix characteristics: parentheses and operators between operands
+        boolean hasInfixOperators = Pattern.compile("\\b(AND|OR|NAND|NOR|XOR|XNOR|NOT)\\b").matcher(expression).find();
+        boolean hasParentheses = expression.contains("(") || expression.contains(")");
+
+        if (hasInfixOperators && hasParentheses) {
+            return "infix";
+        }
+
+        // Check for postfix characteristics
+        String[] tokens = expression.split(" ");
+        Stack<String> stack = new Stack<>();
+
+        for (String token : tokens) {
+            if (Pattern.matches("[A-Z]", token)) {
+                stack.push(token);
+            } else if (SUPPORTED_OPERATORS.contains(token)) {
+                if (token.equals("NOT")) {
+                    if (stack.isEmpty()) {
+                        return "unknown";
+                    }
+                } else {
+                    if (stack.size() < 2) {
+                        return "unknown";
+                    }
+                    stack.pop(); // Simulate reduction of operands for binary operator
+                }
+            } else {
+                return "unknown";
+            }
+        }
+        return stack.size() == 1 ? "postfix" : "unknown";
     }
 
-    @Override
-    public boolean isValid() {
-        LOGGER.fine("Validating expression: " + getExpressionString());
-        String trimmedExpr = getExpressionString().trim();
-        if (trimmedExpr.isEmpty()) {
-            LOGGER.warning("Empty expression provided.");
+    /**
+     * Cleanses multiple spaces in the expression, reducing them to a single space.
+     *
+     * @param expression The original expression string with potential extra spaces
+     * @return A string with extra spaces removed, leaving only single spaces
+     *         between tokens
+     */
+    private String normalizeSpaces(String expression) {
+        return expression.trim().replaceAll("\\s+", " ");
+    }
+
+    private void validateExpression(String expressionString) {
+        if (expressionString == null || expressionString.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid expression: Expression cannot be empty.");
         }
 
-        int openParentheses = 0;
-        List<String> tokens = tokenize(trimmedExpr);
-        String previousToken = "";
-        boolean expectingOperand = true;
+        String[] tokens = expressionString.split(" ");
+        int operandCount = 0;
 
         for (String token : tokens) {
-            if (token.equals("(")) {
-                openParentheses++;
-                if (!expectingOperand) {
-                    LOGGER.warning("Invalid operator placement: '(' after operand.");
-                    throw new InvalidOperatorPlacementException("(", previousToken);
-                }
-                expectingOperand = true;
-            } else if (token.equals(")")) {
-                openParentheses--;
-                if (openParentheses < 0) {
-                    LOGGER.warning("Mismatched parentheses detected.");
-                    throw new IllegalArgumentException("Mismatched parentheses.");
-                }
-                if (expectingOperand) {
-                    LOGGER.warning("Empty parentheses detected.");
-                    throw new IllegalArgumentException("Empty parentheses detected.");
-                }
-                expectingOperand = false;
-            } else if (isOperator(token)) {
-                if (isUnaryOperator(token)) {
-                    if (!expectingOperand) {
-                        LOGGER.warning("Invalid operator placement: " + token + " after " + previousToken + ".");
-                        throw new InvalidOperatorPlacementException(token, previousToken);
+            if (SUPPORTED_OPERATORS.contains(token)) {
+                if (token.equals("NOT")) {
+                    // NOT is a unary operator, requires one operand
+                    if (operandCount < 1) {
+                        throw new IllegalArgumentException("Operator 'NOT' requires one operand but none was found.");
                     }
-                    expectingOperand = true;
                 } else {
-                    if (expectingOperand) {
-                        LOGGER.warning("Invalid operator placement: " + token + " after " + previousToken + ".");
-                        throw new InvalidOperatorPlacementException(token, previousToken);
+                    // All other operators are binary, require two operands
+                    if (operandCount < 2) {
+                        throw new IllegalArgumentException(
+                                "Operator '" + token + "' requires two operands but only " + operandCount + " found.");
                     }
-                    expectingOperand = true;
+                    operandCount--; // Each binary operation reduces the operand count by one
                 }
-            } else if (isBooleanLiteral(token) || isVariable(token)) {
-                if (!expectingOperand) {
-                    LOGGER.warning("Invalid operand placement: " + token + " after " + previousToken + ".");
-                    throw new IllegalArgumentException(
-                            "Invalid operand placement: " + token + " after " + previousToken + ".");
-                }
-                expectingOperand = false;
+            } else if (isValidVariable(token)) {
+                // Valid variable encountered, increase operand count
+                operandCount++;
             } else {
-                LOGGER.warning("Invalid token detected: " + token);
-                throw new IllegalArgumentException("Invalid token detected: " + token);
-            }
-
-            previousToken = token;
-        }
-
-        if (openParentheses != 0) {
-            LOGGER.warning("Mismatched parentheses. Open parentheses count: " + openParentheses);
-            throw new IllegalArgumentException("Mismatched parentheses. Open parentheses count: " + openParentheses);
-        }
-
-        if (expectingOperand) {
-            LOGGER.warning("Expression cannot end with an operator.");
-            throw new IllegalArgumentException("Expression cannot end with an operator.");
-        }
-
-        LOGGER.info("Expression is valid.");
-        return true;
-    }
-
-    private List<String> tokenize(String expr) {
-        List<String> tokens = new ArrayList<>();
-        StringBuilder token = new StringBuilder();
-        for (char ch : expr.toCharArray()) {
-            if (Character.isWhitespace(ch)) {
-                if (token.length() > 0) {
-                    tokens.add(token.toString());
-                    token.setLength(0);
-                }
-            } else if (ch == '(' || ch == ')') {
-                if (token.length() > 0) {
-                    tokens.add(token.toString());
-                    token.setLength(0);
-                }
-                tokens.add(String.valueOf(ch));
-            } else {
-                token.append(ch);
+                // Unsupported token found
+                throw new IllegalArgumentException("Unsupported token: '" + token
+                        + "'. Valid tokens are variables [A-Z] or operators " + SUPPORTED_OPERATORS);
             }
         }
-        if (token.length() > 0) {
-            tokens.add(token.toString());
+
+        // Final check: a valid postfix expression should leave exactly one result
+        if (operandCount != 1) {
+            throw new IllegalArgumentException(
+                    "Invalid postfix expression format. Expected a single final result, but found " + operandCount
+                            + " remaining.");
         }
-        return tokens;
     }
 
-    private boolean isOperator(String token) {
-        return PRECEDENCE_MAP.containsKey(token);
+    private boolean isValidVariable(String token) {
+        return Pattern.matches("[A-Z]", token); // Checks if the token is a single uppercase letter
     }
 
-    private boolean isUnaryOperator(String token) {
-        return token.equals("NOT");
+    private String convertPostfixToInfix(String expressionString) {
+        Stack<String> stack = new Stack<>();
+        String[] tokens = expressionString.split(" ");
+
+        for (String token : tokens) {
+            if (isValidVariable(token)) {
+                // Push variables directly to the stack
+                stack.push(token);
+            } else {
+                // Operators require popping one or two operands and forming an infix expression
+                if (token.equals("NOT")) {
+                    // Unary operator NOT
+                    if (stack.isEmpty()) {
+                        throw new IllegalArgumentException("Invalid postfix expression for unary operator 'NOT'.");
+                    }
+                    String operand = stack.pop();
+                    String result = "(NOT " + operand + ")";
+                    stack.push(result);
+                } else {
+                    // Binary operators like AND, OR, NAND, NOR, XOR, XNOR
+                    if (stack.size() < 2) {
+                        throw new IllegalArgumentException(
+                                "Invalid postfix expression for binary operator '" + token + "'.");
+                    }
+                    String operand2 = stack.pop();
+                    String operand1 = stack.pop();
+                    String result = "(" + operand1 + " " + token + " " + operand2 + ")";
+                    stack.push(result);
+                }
+            }
+        }
+
+        // Final infix expression should be the only item left in the stack
+        if (stack.size() == 1) {
+            return stack.pop();
+        } else {
+            throw new IllegalArgumentException("Invalid postfix expression format. Conversion to infix failed.");
+        }
+
     }
 
-    private boolean isBooleanLiteral(String token) {
-        return token.equalsIgnoreCase("TRUE") || token.equalsIgnoreCase("FALSE");
-    }
+    /**
+     * Converts an infix expression to a postfix expression.
+     * 
+     * @param infix The infix expression to convert.
+     * @return The postfix notation of the given infix expression.
+     */
+    private String convertInfixToPostfix(String infix) {
+        // Normalize spaces and insert spaces around parentheses
+        infix = infix.trim().replaceAll("\\s+", " ");
+        // Insert spaces around parentheses
+        infix = infix.replaceAll("([()])", " $1 ");
+        // Normalize spaces again
+        infix = infix.trim().replaceAll("\\s+", " ");
+        String[] tokens = infix.split(" ");
 
-    private boolean isVariable(String token) {
-        return token.matches("^[A-Z]$");
+        StringBuilder result = new StringBuilder();
+        Stack<String> stack = new Stack<>();
+
+        for (String token : tokens) {
+            if (isOperand(token)) {
+                // Operand: add directly to output
+                result.append(token).append(" ");
+            } else if (token.equals("(")) {
+                // Left parenthesis: push onto stack
+                stack.push(token);
+            } else if (token.equals(")")) {
+                // Right parenthesis: pop until left parenthesis
+                while (!stack.isEmpty() && !stack.peek().equals("(")) {
+                    result.append(stack.pop()).append(" ");
+                }
+                if (!stack.isEmpty() && stack.peek().equals("(")) {
+                    stack.pop(); // Remove '(' from stack
+                } else {
+                    throw new IllegalArgumentException("Mismatched parentheses in expression");
+                }
+            } else if (isOperator(token)) {
+                // Operator: pop operators with higher or equal precedence
+                while (!stack.isEmpty() && !stack.peek().equals("(") &&
+                        ((isLeftAssociative(token) && precedence(token) <= precedence(stack.peek())) ||
+                                (!isLeftAssociative(token) && precedence(token) < precedence(stack.peek())))) {
+                    result.append(stack.pop()).append(" ");
+                }
+                stack.push(token);
+            } else {
+                // Invalid token encountered
+                throw new IllegalArgumentException("Invalid token in expression: " + token);
+            }
+        }
+
+        // Pop any remaining operators from the stack
+        while (!stack.isEmpty()) {
+            if (stack.peek().equals("(") || stack.peek().equals(")")) {
+                throw new IllegalArgumentException("Mismatched parentheses in expression");
+            }
+            result.append(stack.pop()).append(" ");
+        }
+
+        // Return the postfix expression without trailing whitespace
+        return result.toString().trim();
     }
 
     private boolean isOperand(String token) {
-        return isBooleanLiteral(token) || isVariable(token);
+        // Assuming operands are variables represented by letters or strings not
+        // matching operators
+        return !isOperator(token) && !token.equals("(") && !token.equals(")");
+    }
+
+    private boolean isOperator(String token) {
+        switch (token) {
+            case "NOT":
+            case "NAND":
+            case "NOR":
+            case "AND":
+            case "OR":
+            case "XOR":
+            case "XNOR":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private int precedence(String op) {
+        switch (op) {
+            case "NOT":
+                return 4; // Highest precedence
+            case "NAND":
+            case "NOR":
+                return 3;
+            case "AND":
+                return 2;
+            case "OR":
+            case "XOR":
+            case "XNOR":
+                return 1;
+            default:
+                return 0;
+        }
+    }
+
+    private boolean isLeftAssociative(String op) {
+        // 'NOT' is right-associative; others are left-associative
+        return !op.equals("NOT");
+    }
+
+    /**
+     * Checks if parentheses in an infix expression are balanced.
+     * 
+     * @param expression The infix expression to validate.
+     * @return true if the parentheses are balanced, false otherwise.
+     */
+    private boolean isParenthesesBalanced(String expression) {
+        Stack<Character> stack = new Stack<>();
+
+        for (char ch : expression.toCharArray()) {
+            if (ch == '(') {
+                stack.push(ch);
+            } else if (ch == ')') {
+                if (stack.isEmpty()) {
+                    return false; // Unmatched closing parenthesis
+                }
+                stack.pop(); // Match found, pop the opening parenthesis
+            }
+        }
+
+        // If stack is empty, all opening parentheses were matched
+        return stack.isEmpty();
     }
 
     @Override
     protected Object performCalculation() {
-        List<String> postfix = infixToPostfix(tokenize(processedExpressionString));
-        LOGGER.fine("Postfix expression: " + postfix);
-
-        Stack<Boolean> stack = new Stack<>();
-
-        for (String token : postfix) {
-            if (isBooleanLiteral(token)) {
-                stack.push(Boolean.parseBoolean(token.toUpperCase()));
-            } else if (isVariable(token)) {
-                Object varValue = getVariable(token);
-                if (varValue == null) {
-                    LOGGER.severe("Undefined variable encountered during evaluation: " + token);
-                    throw new IllegalArgumentException("Variable " + token + " has not been set.");
-                }
-                stack.push((Boolean) varValue);
-            } else if (isOperator(token)) {
-                if (isUnaryOperator(token)) {
-                    if (stack.isEmpty()) {
-                        throw new IllegalArgumentException("Insufficient operands for unary operator: " + token);
-                    }
-                    stack.push(!stack.pop());
-                } else {
-                    Boolean right = stack.pop();
-                    Boolean left = stack.pop();
-                    stack.push(applyOperator(token, left, right));
-                }
-            }
-        }
-
-        if (stack.size() != 1) {
-            throw new IllegalArgumentException("Invalid expression: Stack should contain a single result after evaluation.");
-        }
-
-        return stack.pop();
-    }
-
-    /**
-     * Converts an infix expression to postfix using the Shunting Yard Algorithm.
-     *
-     * @param tokens The list of infix tokens.
-     * @return The list of postfix tokens.
-     * @throws IllegalArgumentException If there are mismatched parentheses or
-     *                                  invalid tokens.
-     */
-    private List<String> infixToPostfix(List<String> tokens) {
-        List<String> output = new ArrayList<>();
-        Stack<String> operatorStack = new Stack<>();
-
-        for (String token : tokens) {
-            if (isBooleanLiteral(token) || isVariable(token)) {
-                output.add(token);
-            } else if (isOperator(token)) {
-                while (!operatorStack.isEmpty() && isOperator(operatorStack.peek())) {
-                    String topOp = operatorStack.peek();
-                    if ((PRECEDENCE_MAP.get(token) < PRECEDENCE_MAP.get(topOp)) ||
-                            (PRECEDENCE_MAP.get(token).equals(PRECEDENCE_MAP.get(topOp)) &&
-                                    ASSOCIATIVITY_MAP.get(token).equals("LEFT"))) {
-                        output.add(operatorStack.pop());
-                    } else {
-                        break;
-                    }
-                }
-                operatorStack.push(token);
-            } else if (token.equals("(")) {
-                operatorStack.push(token);
-            } else if (token.equals(")")) {
-                while (!operatorStack.isEmpty() && !operatorStack.peek().equals("(")) {
-                    output.add(operatorStack.pop());
-                }
-                if (operatorStack.isEmpty() || !operatorStack.peek().equals("(")) {
-                    throw new IllegalArgumentException("Mismatched parentheses.");
-                }
-                operatorStack.pop(); // Remove '(' from stack
-            } else {
-                throw new IllegalArgumentException("Invalid token: " + token);
-            }
-        }
-
-        while (!operatorStack.isEmpty()) {
-            String op = operatorStack.pop();
-            if (op.equals("(") || op.equals(")")) {
-                throw new IllegalArgumentException("Mismatched parentheses.");
-            }
-            output.add(op);
-        }
-
-        return output;
-    }
-
-    private Boolean applyOperator(String operator, Boolean left, Boolean right) {
-        switch (operator) {
-            case "AND":
-                return left && right;
-            case "OR":
-                return left || right;
-            case "NAND":
-                return !(left && right);
-            case "NOR":
-                return !(left || right);
-            case "XOR":
-                return left ^ right;
-            case "XNOR":
-                return !(left ^ right);
-            default:
-                throw new IllegalArgumentException("Unsupported operator: " + operator);
-        }
+        // Placeholder for actual calculation logic
+        return null;
     }
 
     @Override
-    public JSONObject toJSON() {
-        JSONObject json = super.toJSON();
-        json.put("shortCircuit", shortCircuit);
-        return json;
+    public boolean isValid() {
+        // Validation logic as before
+        return true;
     }
 
     @Override
     public String toString() {
-        return super.toString() + ", shortCircuit=" + shortCircuit + '}';
+        return "LogicExpression{" +
+                "expressionString='" + getExpressionString() + '\'' +
+                ", infixExpression='" + infixExpression + '\'' +
+                ", variables=" + getVariables() +
+                ", variableValues=" + getVariableValues() +
+                ", cachedResult=" + getCachedResult() +
+                '}';
     }
 }

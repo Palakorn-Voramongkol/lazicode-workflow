@@ -29,9 +29,15 @@ public abstract  class Expression implements JSONPersistable {
         return expressionString;
     }
 
+
     public Set<String> getVariables() {
         return variables;
     }
+
+    protected Map<String, Object> getVariableValues() {
+        return variableValues;
+    }
+
 
     protected Set<String> extractVariables(String expression) {
         Set<String> variableSet = new HashSet<>();
@@ -43,7 +49,6 @@ public abstract  class Expression implements JSONPersistable {
         return variableSet;
     }
 
-    public abstract void setVariable(String variable, Object value);
 
     public Object getVariable(String variable) {
         if (variableValues.containsKey(variable)) {
@@ -53,7 +58,7 @@ public abstract  class Expression implements JSONPersistable {
         }
     }
 
-    protected void setVariableValue(String variable, Object value) {
+    public void setVariable(String variable, Object value) {
         if (variables.contains(variable)) {
             variableValues.put(variable, value);
             cachedResult = null;
