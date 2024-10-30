@@ -6,8 +6,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class LogicExpression extends Expression {
-    private String infixExpression;
-    private String postfixExpression;
+
 
     private static final Set<String> SUPPORTED_OPERATORS = new HashSet<>();
 
@@ -43,13 +42,7 @@ public class LogicExpression extends Expression {
         
     }
 
-    public String getInfixExpression() {
-        return infixExpression;
-    }
 
-    public String getPostExpression() {
-        return postfixExpression;
-    }
 
     /**
      * Private helper to determine if an expression is infix or postfix.
@@ -66,6 +59,7 @@ public class LogicExpression extends Expression {
      * @return "infix" if the expression is in infix notation, "postfix" if in
      *         postfix notation, "unknown" if neither.
      */
+    /* 
     private String determineExpressionType(String expression) {
         // First, check if parentheses are balanced
         if (!isParenthesesBalanced(expression)) {
@@ -106,6 +100,53 @@ public class LogicExpression extends Expression {
         }
         return stack.size() == 1 ? "postfix" : "unknown";
     }
+        */
+    private String determineExpressionType(String expression) {
+        // First, check if parentheses are balanced
+        if (!isParenthesesBalanced(expression)) {
+            return "unknown";
+        }
+    
+        expression = expression.trim().replaceAll("\\s+", " ");
+    
+        // Check for infix characteristics: parentheses and operators between operands
+        boolean hasInfixOperators = Pattern.compile("\\b(" + String.join("|", SUPPORTED_OPERATORS) + ")\\b").matcher(expression).find();
+        boolean hasParentheses = expression.contains("(") || expression.contains(")");
+    
+        if (hasInfixOperators && hasParentheses) {
+            return "infix";
+        }
+    
+        // Check for postfix characteristics
+        String[] tokens = expression.split(" ");
+        Stack<String> stack = new Stack<>();
+    
+        for (String token : tokens) {
+            if (Pattern.matches("[A-Z]", token)) {
+                stack.push(token);
+            } else if (SUPPORTED_OPERATORS.contains(token)) {
+                String type = operatorType(token);
+    
+                if (type.equals("unary")) {
+                    if (stack.isEmpty()) {
+                        return "unknown";
+                    }
+                } else if (type.equals("binary")) {
+                    if (stack.size() < 2) {
+                        return "unknown";
+                    }
+                    stack.pop(); // Simulate reduction of operands for a binary operator
+                } else {
+                    return "unknown"; // Unsupported operator type
+                }
+            } else {
+                return "unknown"; // Unsupported token
+            }
+        }
+    
+        return stack.size() == 1 ? "postfix" : "unknown";
+    }
+        
 
     /**
      * Cleanses multiple spaces in the expression, reducing them to a single space.
@@ -117,7 +158,7 @@ public class LogicExpression extends Expression {
     private String normalizeSpaces(String expression) {
         return expression.trim().replaceAll("\\s+", " ");
     }
-
+/* 
     private void validateExpression(String expressionString) {
         if (expressionString == null || expressionString.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid expression: Expression cannot be empty.");
@@ -158,11 +199,109 @@ public class LogicExpression extends Expression {
                             + " remaining.");
         }
     }
+*/
+    private void validateExpression(String expressionString) {
+        if (expressionString == null || expressionString.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid expression: Expression cannot be empty.");
+        }
+
+        String[] tokens = expressionString.split(" ");
+        int operandCount = 0;
+
+        for (String token : tokens) {
+            if (SUPPORTED_OPERATORS.contains(token)) {
+                String type = operatorType(token);
+
+                switch (type) {
+                    case "unary":
+                        // Unary operators require one operand
+                        if (operandCount < 1) {
+                            throw new IllegalArgumentException("Operator '" + token + "' requires one operand but none was found.");
+                        }
+                        break;
+
+                    case "binary":
+                        // Binary operators require two operands
+                        if (operandCount < 2) {
+                            throw new IllegalArgumentException(
+                                    "Operator '" + token + "' requires two operands but only " + operandCount + " found.");
+                        }
+                        operandCount--; // Each binary operation reduces the operand count by one
+                        break;
+
+                    default:
+                        throw new IllegalArgumentException("Unsupported operator: '" + token + "'.");
+                }
+            } else if (isValidVariable(token)) {
+                // Valid variable encountered, increase operand count
+                operandCount++;
+            } else {
+                // Unsupported token found
+                throw new IllegalArgumentException("Unsupported token: '" + token
+                        + "'. Valid tokens are variables [A-Z] or operators " + SUPPORTED_OPERATORS);
+            }
+        }
+
+        // Final check: a valid postfix expression should leave exactly one result
+        if (operandCount != 1) {
+            throw new IllegalArgumentException(
+                    "Invalid postfix expression format. Expected a single final result, but found " + operandCount
+                            + " remaining.");
+        }
+    }
 
     private boolean isValidVariable(String token) {
         return Pattern.matches("[A-Z]", token); // Checks if the token is a single uppercase letter
     }
 
+    private String convertPostfixToInfix(String expressionString) {
+        Stack<String> stack = new Stack<>();
+        String[] tokens = expressionString.split(" ");
+    
+        for (String token : tokens) {
+            if (isValidVariable(token)) {
+                // Push variables directly to the stack
+                stack.push(token);
+            } else {
+                String type = operatorType(token);
+    
+                switch (type) {
+                    case "unary":
+                        // Unary operators require one operand
+                        if (stack.isEmpty()) {
+                            throw new IllegalArgumentException("Invalid postfix expression for unary operator '" + token + "'.");
+                        }
+                        String operand = stack.pop();
+                        String resultUnary = "(" + token + " " + operand + ")";
+                        stack.push(resultUnary);
+                        break;
+    
+                    case "binary":
+                        // Binary operators require two operands
+                        if (stack.size() < 2) {
+                            throw new IllegalArgumentException("Invalid postfix expression for binary operator '" + token + "'.");
+                        }
+                        String operand2 = stack.pop();
+                        String operand1 = stack.pop();
+                        String resultBinary = "(" + operand1 + " " + token + " " + operand2 + ")";
+                        stack.push(resultBinary);
+                        break;
+    
+                    default:
+                        throw new IllegalArgumentException("Invalid operator: '" + token + "'.");
+                }
+            }
+        }
+    
+        // Final infix expression should be the only item left in the stack
+        if (stack.size() == 1) {
+            return stack.pop();
+        } else {
+            throw new IllegalArgumentException("Invalid postfix expression format. Conversion to infix failed.");
+        }
+    }
+    
+/* 
     private String convertPostfixToInfix(String expressionString) {
         Stack<String> stack = new Stack<>();
         String[] tokens = expressionString.split(" ");
@@ -203,7 +342,7 @@ public class LogicExpression extends Expression {
         }
 
     }
-
+*/
     /**
      * Converts an infix expression to a postfix expression.
      * 
@@ -286,8 +425,8 @@ public class LogicExpression extends Expression {
         }
     }
 
-    private int precedence(String op) {
-        switch (op) {
+    private int precedence(String operator) {
+        switch (operator) {
             case "NOT":
                 return 4; // Highest precedence
             case "NAND":
@@ -301,6 +440,22 @@ public class LogicExpression extends Expression {
                 return 1;
             default:
                 return 0;
+        }
+    }
+
+    private String operatorType(String operator) {
+        switch (operator) {
+            case "NOT":
+                return "unary";
+            case "NAND":
+            case "NOR":
+            case "AND":
+            case "OR":
+            case "XOR":
+            case "XNOR":
+                return "binary";
+            default:
+                return "none";
         }
     }
 
@@ -352,7 +507,7 @@ public class LogicExpression extends Expression {
                 ", infixExpression='" + infixExpression + '\'' +
                 ", variables=" + getVariables() +
                 ", variableValues=" + getVariableValues() +
-                ", cachedResult=" + getCachedResult() +
+                ", output=" + getOutput() +
                 '}';
     }
 }

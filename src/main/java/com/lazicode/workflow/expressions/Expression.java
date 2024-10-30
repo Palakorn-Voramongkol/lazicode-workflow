@@ -16,13 +16,23 @@ public abstract  class Expression implements JSONPersistable {
     private String expressionString;
     private Set<String> variables;
     private Map<String, Object> variableValues;
-    private Object cachedResult;
+    private Object output;
+    protected String infixExpression;
+    protected String postfixExpression;
 
     public Expression(String expressionString) {
         this.expressionString = expressionString;
         this.variables = extractVariables(expressionString);
         this.variableValues = new HashMap<>();
-        this.cachedResult = null;
+        this.output = null;
+    }
+
+    public String getInfixExpression() {
+        return infixExpression;
+    }
+
+    public String getPostfixExpression() {
+        return postfixExpression;
     }
 
     public String getExpressionString() {
@@ -61,39 +71,40 @@ public abstract  class Expression implements JSONPersistable {
     public void setVariable(String variable, Object value) {
         if (variables.contains(variable)) {
             variableValues.put(variable, value);
-            cachedResult = null;
+            output = null;
         } else {
             throw new IllegalArgumentException("Variable " + variable + " is not part of the expression.");
         }
     }
 
     public Object calculate() {
-        if (cachedResult != null) {
-            return cachedResult;
+        if (output != null) {
+            return output;
         }
 
         try {
-            cachedResult = performCalculation();
-            return cachedResult;
+            output = performCalculation();
+            return output;
         } catch (IllegalArgumentException e) {
-            cachedResult = null;
+            output = null;
             throw e;
         }
     }
 
     // Protected getter
-    protected Object getCachedResult() {
-        return cachedResult;
+    protected Object getOutput() {
+        return output;
     }
 
     // Protected setter
-    protected void setCachedResult(Object cachedResult) {
-        this.cachedResult = cachedResult;
+    protected void setOutput(Object output) {
+        this.output = output;
     }
 
     protected abstract Object performCalculation();
 
     public abstract boolean isValid();
+    
 
     @Override
     public JSONObject toJSON() {
@@ -110,7 +121,7 @@ public abstract  class Expression implements JSONPersistable {
                 "expressionString='" + expressionString + '\'' +
                 ", variables=" + variables +
                 ", variableValues=" + variableValues +
-                ", cachedResult=" + cachedResult +
+                ", output=" + output +
                 '}';
     }
 }
