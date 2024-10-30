@@ -21,7 +21,7 @@ public class LogicExpression extends Expression {
         SUPPORTED_OPERATORS.add("XNOR");
     }
 
-    public LogicExpression(String expressionString) throws InvalidExpression {
+    public LogicExpression(String expressionString) throws com.lazicode.workflow.exceptions.InvalidExpression {
         super(expressionString);
         
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);

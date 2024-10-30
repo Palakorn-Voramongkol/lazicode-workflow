@@ -389,65 +389,79 @@ protected String convertPostfixToInfix(String expressionString) throws InvalidEx
  * @return The converted postfix expression.
  * @throws InvalidExpression if there is an error in the expression format.
  */
-protected String convertInfixToPostfix(String infixExpression) throws InvalidExpression {
-    Stack<String> stack = new Stack<>();
-    StringBuilder postfix = new StringBuilder();
+protected String convertInfixToPostfix(String infix) {
+    // Normalize spaces and insert spaces around parentheses
+    infix = infix.trim().replaceAll("\\s+", " ");
+    infix = infix.replaceAll("([()])", " $1 ");
+    infix = infix.trim().replaceAll("\\s+", " ");
+    String[] tokens = infix.split(" ");
 
-    String[] tokens = infixExpression.split(" ");
+    StringBuilder result = new StringBuilder();
+    Stack<String> stack = new Stack<>();
     boolean expectOperand = true;
 
     for (String token : tokens) {
-        if (isValidVariable(token)) {
-            // If an operand is expected, append to postfix
-            if (!expectOperand) {
-                throw new InvalidExpression("Unexpected operand '" + token + "' following another operand without an operator.");
-            }
-            postfix.append(token).append(" ");
-            expectOperand = false;
-        } else if (isOperator(token)) {
-            // Handle unary vs. binary operators and enforce precedence
-            String type = operatorType(token);
-            if (type.equals("unary")) {
-                if (!expectOperand) {
-                    throw new InvalidExpression("Unexpected unary operator without operand: '" + token + "'.");
-                }
-                stack.push(token);
-            } else {
-                // Pop operators from stack according to precedence rules
-                while (!stack.isEmpty() && precedence(stack.peek()) >= precedence(token)) {
-                    postfix.append(stack.pop()).append(" ");
-                }
-                stack.push(token);
-                expectOperand = true;
-            }
+        if (isOperand(token)) {
+            // Operand: add directly to output
+            result.append(token).append(" ");
+            expectOperand = false;  // Next, expect an operator
         } else if (token.equals("(")) {
+            // Left parenthesis: push onto stack
             stack.push(token);
+            expectOperand = true;  // After '(', expect an operand
         } else if (token.equals(")")) {
+            // Right parenthesis: pop until left parenthesis
             while (!stack.isEmpty() && !stack.peek().equals("(")) {
-                postfix.append(stack.pop()).append(" ");
+                result.append(stack.pop()).append(" ");
             }
-            if (!stack.isEmpty()) {
-                stack.pop();
+            if (!stack.isEmpty() && stack.peek().equals("(")) {
+                stack.pop(); // Remove '(' from stack
             } else {
-                throw new InvalidExpression("Mismatched parentheses in expression.");
+                throw new IllegalArgumentException("Mismatched parentheses in expression");
+            }
+            expectOperand = false;  // After ')', expect an operator
+        } else if (isOperator(token)) {
+            if (isUnaryOperator(token) && expectOperand) {
+                // Handle unary operator
+                stack.push(token);
+            } else {
+                // Binary operator: pop operators with higher or equal precedence
+                while (!stack.isEmpty() && !stack.peek().equals("(") &&
+                        ((isLeftAssociative(token) && precedence(token) <= precedence(stack.peek())) ||
+                                (!isLeftAssociative(token) && precedence(token) < precedence(stack.peek())))) {
+                    result.append(stack.pop()).append(" ");
+                }
+                stack.push(token);
+                expectOperand = true;  // After binary operator, expect an operand
             }
         } else {
-            throw new InvalidExpression("Invalid token: '" + token + "'.");
+            // Invalid token encountered
+            throw new IllegalArgumentException("Invalid token in expression: " + token);
         }
     }
 
-    // Append remaining operators from stack
+    // Pop any remaining operators from the stack
     while (!stack.isEmpty()) {
-        String top = stack.pop();
-        if (top.equals("(") || top.equals(")")) {
-            throw new InvalidExpression("Mismatched parentheses in expression.");
+        if (stack.peek().equals("(") || stack.peek().equals(")")) {
+            throw new IllegalArgumentException("Mismatched parentheses in expression");
         }
-        postfix.append(top).append(" ");
+        result.append(stack.pop()).append(" ");
     }
 
-    return postfix.toString().trim();
+    // Return the postfix expression without trailing whitespace
+    return result.toString().trim();
 }
 
+/**
+ * Checks if the given operator is a unary operator.
+ * 
+ * @param token The token to check.
+ * @return true if the token is a unary operator, false otherwise.
+ */
+private boolean isUnaryOperator(String token) {
+    // Define "NOT" as a unary operator. Add other unary operators here if needed.
+    return "NOT".equals(token);
+}
 
     /**
      * Checks if parentheses in an infix expression are balanced.

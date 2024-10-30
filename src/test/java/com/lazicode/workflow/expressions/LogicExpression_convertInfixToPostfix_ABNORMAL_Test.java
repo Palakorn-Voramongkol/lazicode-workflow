@@ -32,7 +32,6 @@ class LogicExpression_convertInfixToPostfix_ABNORMAL_Test {
         convertMethod.setAccessible(true);
         return (String) convertMethod.invoke(expr, infix);
     }
-
     @Test
     void testMissingOperator() {
         assertThrows(InvalidExpression.class, () -> {
