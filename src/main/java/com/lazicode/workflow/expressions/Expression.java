@@ -1,4 +1,3 @@
-
 package com.lazicode.workflow.expressions;
 
 import java.util.HashMap;
@@ -13,7 +12,11 @@ import org.json.JSONObject;
 
 import com.lazicode.workflow.interfaces.JSONPersistable;
 
-public abstract  class Expression implements JSONPersistable {
+/**
+ * Abstract class representing a generic expression. It provides methods to handle
+ * infix and postfix expressions, manage variables, and serialize the expression to JSON.
+ */
+public abstract class Expression implements JSONPersistable {
     private String expressionString;
     private Set<String> variables;
     private Map<String, Object> variableValues;
@@ -21,6 +24,12 @@ public abstract  class Expression implements JSONPersistable {
     protected String infixExpression;
     protected String postfixExpression;
 
+    /**
+     * Constructs an Expression object, initializing the expression string, extracting
+     * variables, and setting up storage for variable values and output.
+     *
+     * @param expressionString The original expression string.
+     */
     public Expression(String expressionString) {
         this.expressionString = expressionString;
         this.variables = extractVariables(expressionString);
@@ -28,28 +37,57 @@ public abstract  class Expression implements JSONPersistable {
         this.output = null;
     }
 
+    /**
+     * Returns the infix expression representation.
+     *
+     * @return The infix expression as a String.
+     */
     public String getInfixExpression() {
         return infixExpression;
     }
 
+    /**
+     * Returns the postfix expression representation.
+     *
+     * @return The postfix expression as a String.
+     */
     public String getPostfixExpression() {
         return postfixExpression;
     }
 
+    /**
+     * Returns the original expression string.
+     *
+     * @return The original expression string.
+     */
     public String getExpressionString() {
         return expressionString;
     }
 
-
+    /**
+     * Retrieves the set of variables used in the expression.
+     *
+     * @return A Set containing the variables in the expression.
+     */
     public Set<String> getVariables() {
         return variables;
     }
 
+    /**
+     * Retrieves the map of variable values.
+     *
+     * @return A Map containing variable values.
+     */
     protected Map<String, Object> getVariableValues() {
         return variableValues;
     }
 
-
+    /**
+     * Extracts variables from the given expression string by identifying uppercase letters.
+     *
+     * @param expression The expression string to analyze.
+     * @return A Set of variables found in the expression.
+     */
     protected Set<String> extractVariables(String expression) {
         Set<String> variableSet = new HashSet<>();
         Pattern pattern = Pattern.compile("[A-Z]");
@@ -60,7 +98,13 @@ public abstract  class Expression implements JSONPersistable {
         return variableSet;
     }
 
-
+    /**
+     * Retrieves the value of a specific variable.
+     *
+     * @param variable The variable name.
+     * @return The value of the specified variable.
+     * @throws IllegalArgumentException If the variable is not set.
+     */
     public Object getVariable(String variable) {
         if (variableValues.containsKey(variable)) {
             return variableValues.get(variable);
@@ -69,77 +113,144 @@ public abstract  class Expression implements JSONPersistable {
         }
     }
 
+    /**
+     * Sets the value for a specific variable.
+     *
+     * @param variable The variable name.
+     * @param value The value to assign to the variable.
+     * @throws IllegalArgumentException If the variable is not part of the expression.
+     */
     public void setVariable(String variable, Object value) {
         if (variables.contains(variable)) {
             variableValues.put(variable, value);
-            output = null;
+            output = null; // Reset output to null as the expression has changed
         } else {
             throw new IllegalArgumentException("Variable " + variable + " is not part of the expression.");
         }
     }
 
+    /**
+     * Calculates and returns the result of the expression, caching the output for reuse.
+     *
+     * @return The calculated result of the expression.
+     * @throws IllegalArgumentException If the calculation fails.
+     */
     public Object calculate() {
         if (output != null) {
-            return output;
+            return output; // Use cached result if available
         }
 
         try {
             output = performCalculation();
             return output;
         } catch (IllegalArgumentException e) {
-            output = null;
+            output = null; // Reset output if calculation fails
             throw e;
         }
     }
 
-    // Protected getter
+    /**
+     * Returns the cached output of the expression calculation.
+     *
+     * @return The cached output.
+     */
     protected Object getOutput() {
         return output;
     }
 
-    // Protected setter
+    /**
+     * Sets the output of the expression.
+     *
+     * @param output The output to set.
+     */
     protected void setOutput(Object output) {
         this.output = output;
     }
 
+    /**
+     * Abstract method for performing the calculation of the expression.
+     *
+     * @return The calculated result.
+     */
     protected abstract Object performCalculation();
 
+    /**
+     * Abstract method to validate the expression format.
+     *
+     * @return true if the expression is valid; false otherwise.
+     */
     public abstract boolean isValid();
 
+    /**
+     * Determines the operator type of a given operator.
+     *
+     * @param operator The operator to analyze.
+     * @return The operator type as a String.
+     */
     protected abstract String operatorType(String operator);
+
+    /**
+     * Determines if a token is an operator.
+     *
+     * @param token The token to analyze.
+     * @return true if the token is an operator; false otherwise.
+     */
     protected abstract boolean isOperator(String token);
+
+    /**
+     * Retrieves the precedence of a given operator.
+     *
+     * @param operator The operator to analyze.
+     * @return The precedence level as an integer.
+     */
     protected abstract int precedence(String operator);
+
+    /**
+     * Determines if a token is an operand.
+     *
+     * @param token The token to analyze.
+     * @return true if the token is an operand; false otherwise.
+     */
     protected abstract boolean isOperand(String token);
+
+    /**
+     * Determines if an operator is left-associative.
+     *
+     * @param operator The operator to analyze.
+     * @return true if the operator is left-associative; false if right-associative.
+     */
     protected abstract boolean isLeftAssociative(String operator);
 
-    
-    
+    /**
+     * Determines if an expression is infix, postfix, or unknown.
+     *
+     * @param expression The expression string to evaluate.
+     * @param SUPPORTED_OPERATORS Set of supported operators.
+     * @return "infix" if infix notation, "postfix" if postfix notation, "unknown" otherwise.
+     */
     protected String determineExpressionType(String expression, Set<String> SUPPORTED_OPERATORS) {
-        // First, check if parentheses are balanced
         if (!isParenthesesBalanced(expression)) {
             return "unknown";
         }
     
         expression = expression.trim().replaceAll("\\s+", " ");
     
-        // Check for infix characteristics: parentheses and operators between operands
         boolean hasInfixOperators = Pattern.compile("\\b(" + String.join("|", SUPPORTED_OPERATORS) + ")\\b").matcher(expression).find();
         boolean hasParentheses = expression.contains("(") || expression.contains(")");
-    
+
         if (hasInfixOperators && hasParentheses) {
             return "infix";
         }
-    
-        // Check for postfix characteristics
+
         String[] tokens = expression.split(" ");
         Stack<String> stack = new Stack<>();
-    
+
         for (String token : tokens) {
             if (Pattern.matches("[A-Z]", token)) {
                 stack.push(token);
             } else if (SUPPORTED_OPERATORS.contains(token)) {
                 String type = operatorType(token);
-    
+
                 if (type.equals("unary")) {
                     if (stack.isEmpty()) {
                         return "unknown";
@@ -148,18 +259,25 @@ public abstract  class Expression implements JSONPersistable {
                     if (stack.size() < 2) {
                         return "unknown";
                     }
-                    stack.pop(); // Simulate reduction of operands for a binary operator
+                    stack.pop();
                 } else {
-                    return "unknown"; // Unsupported operator type
+                    return "unknown";
                 }
             } else {
-                return "unknown"; // Unsupported token
+                return "unknown";
             }
         }
-    
+
         return stack.size() == 1 ? "postfix" : "unknown";
     }
 
+    /**
+     * Validates the format of a given expression.
+     *
+     * @param expressionString The expression string to validate.
+     * @param SUPPORTED_OPERATORS Set of supported operators.
+     * @throws IllegalArgumentException If the expression is invalid.
+     */
     protected void validateExpression(String expressionString, Set<String> SUPPORTED_OPERATORS) {
         if (expressionString == null || expressionString.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid expression: Expression cannot be empty.");
@@ -174,56 +292,52 @@ public abstract  class Expression implements JSONPersistable {
 
                 switch (type) {
                     case "unary":
-                        // Unary operators require one operand
                         if (operandCount < 1) {
                             throw new IllegalArgumentException("Operator '" + token + "' requires one operand but none was found.");
                         }
                         break;
 
                     case "binary":
-                        // Binary operators require two operands
                         if (operandCount < 2) {
-                            throw new IllegalArgumentException(
-                                    "Operator '" + token + "' requires two operands but only " + operandCount + " found.");
+                            throw new IllegalArgumentException("Operator '" + token + "' requires two operands but only " + operandCount + " found.");
                         }
-                        operandCount--; // Each binary operation reduces the operand count by one
+                        operandCount--;
                         break;
 
                     default:
                         throw new IllegalArgumentException("Unsupported operator: '" + token + "'.");
                 }
             } else if (isValidVariable(token)) {
-                // Valid variable encountered, increase operand count
                 operandCount++;
             } else {
-                // Unsupported token found
-                throw new IllegalArgumentException("Unsupported token: '" + token
-                        + "'. Valid tokens are variables [A-Z] or operators " + SUPPORTED_OPERATORS);
+                throw new IllegalArgumentException("Unsupported token: '" + token + "'. Valid tokens are variables [A-Z] or operators " + SUPPORTED_OPERATORS);
             }
         }
 
-        // Final check: a valid postfix expression should leave exactly one result
         if (operandCount != 1) {
-            throw new IllegalArgumentException(
-                    "Invalid postfix expression format. Expected a single final result, but found " + operandCount
-                            + " remaining.");
+            throw new IllegalArgumentException("Invalid postfix expression format. Expected a single final result, but found " + operandCount + " remaining.");
         }
     }
 
+    /**
+     * Converts a postfix expression to infix notation.
+     *
+     * @param expressionString The postfix expression to convert.
+     * @return The converted infix expression.
+     * @throws IllegalArgumentException If the postfix expression is invalid.
+     */
     protected String convertPostfixToInfix(String expressionString) {
         Stack<String> stack = new Stack<>();
         String[] tokens = expressionString.split(" ");
-    
+
         for (String token : tokens) {
             if (isValidVariable(token)) {
-                // Push variables directly to the stack
                 stack.push(token);
             } else {
                 String type = operatorType(token);
-    
+
                 switch (type) {
                     case "unary":
-                        // Unary operators require one operand
                         if (stack.isEmpty()) {
                             throw new IllegalArgumentException("Invalid postfix expression for unary operator '" + token + "'.");
                         }
@@ -231,9 +345,8 @@ public abstract  class Expression implements JSONPersistable {
                         String resultUnary = "(" + token + " " + operand + ")";
                         stack.push(resultUnary);
                         break;
-    
+
                     case "binary":
-                        // Binary operators require two operands
                         if (stack.size() < 2) {
                             throw new IllegalArgumentException("Invalid postfix expression for binary operator '" + token + "'.");
                         }
@@ -242,14 +355,13 @@ public abstract  class Expression implements JSONPersistable {
                         String resultBinary = "(" + operand1 + " " + token + " " + operand2 + ")";
                         stack.push(resultBinary);
                         break;
-    
+
                     default:
                         throw new IllegalArgumentException("Invalid operator: '" + token + "'.");
                 }
             }
         }
-    
-        // Final infix expression should be the only item left in the stack
+
         if (stack.size() == 1) {
             return stack.pop();
         } else {
@@ -257,12 +369,15 @@ public abstract  class Expression implements JSONPersistable {
         }
     }
 
+    /**
+     * Converts an infix expression to postfix notation.
+     *
+     * @param infix The infix expression to convert.
+     * @return The converted postfix expression.
+     */
     protected String convertInfixToPostfix(String infix) {
-        // Normalize spaces and insert spaces around parentheses
         infix = infix.trim().replaceAll("\\s+", " ");
-        // Insert spaces around parentheses
         infix = infix.replaceAll("([()])", " $1 ");
-        // Normalize spaces again
         infix = infix.trim().replaceAll("\\s+", " ");
         String[] tokens = infix.split(" ");
 
@@ -271,23 +386,19 @@ public abstract  class Expression implements JSONPersistable {
 
         for (String token : tokens) {
             if (isOperand(token)) {
-                // Operand: add directly to output
                 result.append(token).append(" ");
             } else if (token.equals("(")) {
-                // Left parenthesis: push onto stack
                 stack.push(token);
             } else if (token.equals(")")) {
-                // Right parenthesis: pop until left parenthesis
                 while (!stack.isEmpty() && !stack.peek().equals("(")) {
                     result.append(stack.pop()).append(" ");
                 }
                 if (!stack.isEmpty() && stack.peek().equals("(")) {
-                    stack.pop(); // Remove '(' from stack
+                    stack.pop();
                 } else {
                     throw new IllegalArgumentException("Mismatched parentheses in expression");
                 }
             } else if (isOperator(token)) {
-                // Operator: pop operators with higher or equal precedence
                 while (!stack.isEmpty() && !stack.peek().equals("(") &&
                         ((isLeftAssociative(token) && precedence(token) <= precedence(stack.peek())) ||
                                 (!isLeftAssociative(token) && precedence(token) < precedence(stack.peek())))) {
@@ -295,12 +406,10 @@ public abstract  class Expression implements JSONPersistable {
                 }
                 stack.push(token);
             } else {
-                // Invalid token encountered
                 throw new IllegalArgumentException("Invalid token in expression: " + token);
             }
         }
 
-        // Pop any remaining operators from the stack
         while (!stack.isEmpty()) {
             if (stack.peek().equals("(") || stack.peek().equals(")")) {
                 throw new IllegalArgumentException("Mismatched parentheses in expression");
@@ -308,15 +417,14 @@ public abstract  class Expression implements JSONPersistable {
             result.append(stack.pop()).append(" ");
         }
 
-        // Return the postfix expression without trailing whitespace
         return result.toString().trim();
     }
 
     /**
      * Checks if parentheses in an infix expression are balanced.
-     * 
+     *
      * @param expression The infix expression to validate.
-     * @return true if the parentheses are balanced, false otherwise.
+     * @return true if the parentheses are balanced; false otherwise.
      */
     protected boolean isParenthesesBalanced(String expression) {
         Stack<Character> stack = new Stack<>();
@@ -326,20 +434,30 @@ public abstract  class Expression implements JSONPersistable {
                 stack.push(ch);
             } else if (ch == ')') {
                 if (stack.isEmpty()) {
-                    return false; // Unmatched closing parenthesis
+                    return false;
                 }
-                stack.pop(); // Match found, pop the opening parenthesis
+                stack.pop();
             }
         }
 
-        // If stack is empty, all opening parentheses were matched
         return stack.isEmpty();
     }
 
+    /**
+     * Validates if the token is a single uppercase letter variable.
+     *
+     * @param token The token to validate.
+     * @return true if the token is a valid variable; false otherwise.
+     */
     protected boolean isValidVariable(String token) {
-        return Pattern.matches("[A-Z]", token); // Checks if the token is a single uppercase letter
+        return Pattern.matches("[A-Z]", token);
     }
 
+    /**
+     * Converts the expression to JSON format for serialization.
+     *
+     * @return A JSONObject representing the expression.
+     */
     @Override
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
@@ -349,6 +467,11 @@ public abstract  class Expression implements JSONPersistable {
         return json;
     }
 
+    /**
+     * Returns a string representation of the Expression object.
+     *
+     * @return String representation of the Expression.
+     */
     @Override
     public String toString() {
         return "Expression{" +

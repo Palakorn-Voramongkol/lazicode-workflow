@@ -1,9 +1,8 @@
 package com.lazicode.workflow.expressions;
 
-import java.util.Stack;
+
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 public class LogicExpression extends Expression {
 
