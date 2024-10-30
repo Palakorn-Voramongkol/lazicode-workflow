@@ -1,11 +1,13 @@
 package com.lazicode.workflow.expressions;
 
-
 import java.util.HashSet;
 import java.util.Set;
 
-public class LogicExpression extends Expression {
+import com.lazicode.workflow.exceptions.InvalidExpression;
 
+import java.util.List;
+
+public class LogicExpression extends Expression {
 
     private static final Set<String> SUPPORTED_OPERATORS = new HashSet<>();
 
@@ -19,29 +21,27 @@ public class LogicExpression extends Expression {
         SUPPORTED_OPERATORS.add("XNOR");
     }
 
-    public LogicExpression(String expressionString) {
+    public LogicExpression(String expressionString) throws InvalidExpression {
         super(expressionString);
-        expressionString = normalizeSpaces(expressionString); // Cleanse spaces
+        
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
 
         if (expressionType.equals("unknown")) {
             throw new IllegalArgumentException(
-                                "Invalid expression type, allow only valid infix or postfix logical expressions.");
+                    "Invalid expression type, allow only valid infix or postfix logical expressions.");
         }
         if (expressionType.equals("postfix")) {
             validatePostfixExpression(expressionString, SUPPORTED_OPERATORS); // Validate before proceeding
             infixExpression = convertPostfixToInfix(expressionString); // Convert and store the infix expression
             postfixExpression = expressionString; // Store the original postfix expression
-        }    
-        else {
+        } else {
             postfixExpression = convertInfixToPostfix(expressionString); // Convert and store the infix expression
             validatePostfixExpression(postfixExpression, SUPPORTED_OPERATORS); // Validate before proceeding
-            infixExpression = convertPostfixToInfix(postfixExpression); // Convert and store the infix expression beautifully
+            infixExpression = convertPostfixToInfix(postfixExpression); // Convert and store the infix expression
+                                                                        // beautifully
         }
-        
+
     }
-
-
 
     @Override
     protected boolean isOperand(String token) {
@@ -49,6 +49,7 @@ public class LogicExpression extends Expression {
         // matching operators
         return !isOperator(token) && !token.equals("(") && !token.equals(")");
     }
+
     @Override
     protected boolean isOperator(String token) {
         switch (token) {
@@ -64,6 +65,7 @@ public class LogicExpression extends Expression {
                 return false;
         }
     }
+
     @Override
     protected int precedence(String operator) {
         switch (operator) {
@@ -99,6 +101,7 @@ public class LogicExpression extends Expression {
                 return "none";
         }
     }
+
     @Override
     protected boolean isLeftAssociative(String operator) {
         // 'NOT' is right-associative; others are left-associative
@@ -110,12 +113,6 @@ public class LogicExpression extends Expression {
         }
     }
 
-
-    @Override
-    protected Object performCalculation() {
-        // Placeholder for actual calculation logic
-        return null;
-    }
 
     @Override
     public boolean isValid() {
@@ -132,5 +129,17 @@ public class LogicExpression extends Expression {
                 ", variableValues=" + getVariableValues() +
                 ", output=" + getOutput() +
                 '}';
+    }
+
+    @Override
+    protected Object applyOperator(String operator, List<?> operands) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'applyOperator'");
+    }
+
+    @Override
+    protected Object performCalculation() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'performCalculation'");
     }
 }

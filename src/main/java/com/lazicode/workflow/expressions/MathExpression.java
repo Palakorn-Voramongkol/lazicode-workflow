@@ -4,7 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Collections;
 import java.util.regex.Pattern;
+
+import com.lazicode.workflow.exceptions.InvalidExpression;
+
 import java.util.Stack;
+import java.util.List;
+import java.util.Arrays;
 
 /**
  * Class representing a mathematical expression. It supports infix and postfix notations
@@ -33,9 +38,8 @@ public class MathExpression extends Expression {
      * @param expressionString The mathematical expression string in infix or postfix notation.
      * @throws IllegalArgumentException If the expression is invalid or unsupported.
      */
-    public MathExpression(String expressionString) {
+    public MathExpression(String expressionString) throws InvalidExpression {
         super(expressionString);
-        expressionString = normalizeSpaces(expressionString); // Cleanse spaces
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
 
         if (expressionType.equals("unknown")) {
@@ -130,77 +134,9 @@ public class MathExpression extends Expression {
         return true;
     }
 
-    /**
-     * Performs the calculation of the mathematical expression. This method
-     * evaluates the postfix expression using a stack.
-     *
-     * @return The result of the calculation as a Double.
-     */
-    @Override
-    protected Object performCalculation() {
-        String[] tokens = postfixExpression.split(" ");
-        Stack<Double> stack = new Stack<>();
+    
 
-        for (String token : tokens) {
-            if (isOperand(token)) {
-                // Assuming operands are single uppercase letters, variables should be set with their values before calculation
-                Object varValue = getVariable(token);
-                if (varValue instanceof Number) {
-                    double value = ((Number) varValue).doubleValue();
-                    stack.push(value);
-                } else {
-                    throw new IllegalArgumentException("Variable '" + token + "' is not a numeric value.");
-                }
-            } else if (isOperator(token)) {
-                if (stack.size() < 2) {
-                    throw new IllegalArgumentException("Insufficient operands for operator '" + token + "'.");
-                }
-                double b = stack.pop();
-                double a = stack.pop();
-                double result = applyOperator(a, b, token);
-                stack.push(result);
-            } else {
-                throw new IllegalArgumentException("Invalid token '" + token + "' in expression.");
-            }
-        }
 
-        if (stack.size() != 1) {
-            throw new IllegalArgumentException("Invalid postfix expression format.");
-        }
-
-        return stack.pop();
-    }
-
-    /**
-     * Applies the given operator to two operands and returns the result.
-     *
-     * @param a        The first operand.
-     * @param b        The second operand.
-     * @param operator The operator to apply.
-     * @return The result of the operation.
-     */
-    private double applyOperator(double a, double b, String operator) {
-        switch (operator) {
-            case "+":
-                return a + b;
-            case "-":
-                return a - b;
-            case "*":
-                return a * b;
-            case "/":
-                if (b == 0) {
-                    throw new IllegalArgumentException("Division by zero.");
-                }
-                return a / b;
-            case "%":
-                if (b == 0) {
-                    throw new IllegalArgumentException("Modulus by zero.");
-                }
-                return a % b;
-            default:
-                throw new IllegalArgumentException("Unsupported operator '" + operator + "'.");
-        }
-    }
 
     /**
      * Indicates whether the MathExpression is valid.
@@ -211,5 +147,17 @@ public class MathExpression extends Expression {
     public boolean isValid() {
         // Since the constructor validates the expression, return true if the object is created successfully
         return true;
+    }
+
+    @Override
+    protected Object applyOperator(String operator, List<?> operands) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'applyOperator'");
+    }
+
+    @Override
+    protected Object performCalculation() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'performCalculation'");
     }
 }

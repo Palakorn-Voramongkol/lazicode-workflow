@@ -7,10 +7,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Stack;
+import java.util.List;
 
 import org.json.JSONObject;
 
+import com.lazicode.workflow.exceptions.InvalidExpression;
 import com.lazicode.workflow.interfaces.JSONPersistable;
+import com.lazicode.workflow.expressions.utils.*;
+
 
 /**
  * Abstract class representing a generic expression. It provides methods to handle
@@ -24,17 +28,21 @@ public abstract class Expression implements JSONPersistable {
     protected String infixExpression;
     protected String postfixExpression;
 
+
     /**
      * Constructs an Expression object, initializing the expression string, extracting
      * variables, and setting up storage for variable values and output.
      *
      * @param expressionString The original expression string.
      */
-    public Expression(String expressionString) {
-        this.expressionString = expressionString;
+    public Expression(String expressionString) throws InvalidExpression{
+
+        this.expressionString = ExpressionUtils.normalizeSpaces(expressionString); // Cleanse spaces
+        
         this.variables = extractVariables(expressionString);
         this.variableValues = new HashMap<>();
         this.output = null;
+
     }
 
     /**
@@ -129,6 +137,8 @@ public abstract class Expression implements JSONPersistable {
         }
     }
 
+
+
     /**
      * Calculates and returns the result of the expression, caching the output for reuse.
      *
@@ -149,7 +159,7 @@ public abstract class Expression implements JSONPersistable {
         }
     }
 
-
+    protected abstract Object applyOperator(String operator, List<?> operands);
 
     /**
      * Returns the cached output of the expression calculation.
@@ -225,17 +235,6 @@ public abstract class Expression implements JSONPersistable {
 
 
     /**
-     * Cleanses multiple spaces in the expression, reducing them to a single space.
-     *
-     * @param expression The original expression string with potential extra spaces
-     * @return A string with extra spaces removed, leaving only single spaces
-     *         between tokens
-     */
-    protected String normalizeSpaces(String expression) {
-        return expression.trim().replaceAll("\\s+", " ");
-    }
-
-    /**
      * Determines if an expression is infix, postfix, or unknown.
      *
      * @param expression The expression string to evaluate.
@@ -284,155 +283,171 @@ public abstract class Expression implements JSONPersistable {
 
         return stack.size() == 1 ? "postfix" : "unknown";
     }
-
-    /**
-     * Validates the Postfix format of a given expression.
-     *
-     * @param expressionString The expression string to validate.
-     * @param SUPPORTED_OPERATORS Set of supported operators.
-     * @throws IllegalArgumentException If the expression is invalid.
-     */
-    protected void validatePostfixExpression(String expressionString, Set<String> SUPPORTED_OPERATORS) {
-        if (expressionString == null || expressionString.trim().isEmpty()) {
-            throw new IllegalArgumentException("Invalid expression: Expression cannot be empty.");
-        }
-
-        String[] tokens = expressionString.split(" ");
-        int operandCount = 0;
-
-        for (String token : tokens) {
-            if (SUPPORTED_OPERATORS.contains(token)) {
-                String type = operatorType(token);
-
-                switch (type) {
-                    case "unary":
-                        if (operandCount < 1) {
-                            throw new IllegalArgumentException("Operator '" + token + "' requires one operand but none was found.");
-                        }
-                        break;
-
-                    case "binary":
-                        if (operandCount < 2) {
-                            throw new IllegalArgumentException("Operator '" + token + "' requires two operands but only " + operandCount + " found.");
-                        }
-                        operandCount--;
-                        break;
-
-                    default:
-                        throw new IllegalArgumentException("Unsupported operator: '" + token + "'.");
-                }
-            } else if (isValidVariable(token)) {
-                operandCount++;
-            } else {
-                throw new IllegalArgumentException("Unsupported token: '" + token + "'. Valid tokens are variables [A-Z] or operators " + SUPPORTED_OPERATORS);
-            }
-        }
-
-        if (operandCount != 1) {
-            throw new IllegalArgumentException("Invalid postfix expression format. Expected a single final result, but found " + operandCount + " remaining.");
-        }
+/**
+ * Validates the Postfix format of a given expression.
+ *
+ * @param expressionString The expression string to validate.
+ * @param SUPPORTED_OPERATORS Set of supported operators.
+ * @throws InvalidExpression If the expression is invalid.
+ */
+protected void validatePostfixExpression(String expressionString, Set<String> SUPPORTED_OPERATORS) throws InvalidExpression{
+    if (expressionString == null || expressionString.trim().isEmpty()) {
+        throw new InvalidExpression("Invalid expression: Expression cannot be empty.");
     }
 
-    /**
-     * Converts a postfix expression to infix notation.
-     *
-     * @param expressionString The postfix expression to convert.
-     * @return The converted infix expression.
-     * @throws IllegalArgumentException If the postfix expression is invalid.
-     */
-    protected String convertPostfixToInfix(String expressionString) {
-        Stack<String> stack = new Stack<>();
-        String[] tokens = expressionString.split(" ");
+    String[] tokens = expressionString.split(" ");
+    int operandCount = 0;
 
-        for (String token : tokens) {
-            if (isValidVariable(token)) {
-                stack.push(token);
-            } else {
-                String type = operatorType(token);
+    for (String token : tokens) {
+        System.out.println("Processing token: " + token);
 
-                switch (type) {
-                    case "unary":
-                        if (stack.isEmpty()) {
-                            throw new IllegalArgumentException("Invalid postfix expression for unary operator '" + token + "'.");
-                        }
-                        String operand = stack.pop();
-                        String resultUnary = "(" + token + " " + operand + ")";
-                        stack.push(resultUnary);
-                        break;
+        if (SUPPORTED_OPERATORS.contains(token)) {
+            String type = operatorType(token);
 
-                    case "binary":
-                        if (stack.size() < 2) {
-                            throw new IllegalArgumentException("Invalid postfix expression for binary operator '" + token + "'.");
-                        }
-                        String operand2 = stack.pop();
-                        String operand1 = stack.pop();
-                        String resultBinary = "(" + operand1 + " " + token + " " + operand2 + ")";
-                        stack.push(resultBinary);
-                        break;
+            switch (type) {
+                case "unary":
+                    if (operandCount < 1) {
+                        throw new InvalidExpression("Operator '" + token + "' requires one operand but none was found.");
+                    }
+                    break;
 
-                    default:
-                        throw new IllegalArgumentException("Invalid operator: '" + token + "'.");
-                }
+                case "binary":
+                    if (operandCount < 2) {
+                        throw new InvalidExpression("Operator '" + token + "' requires two operands but only " + operandCount + " found.");
+                    }
+                    operandCount--;
+                    break;
+
+                default:
+                    throw new InvalidExpression("Unsupported operator: '" + token + "'.");
             }
-        }
-
-        if (stack.size() == 1) {
-            return stack.pop();
+        } else if (isValidVariable(token)) {
+            operandCount++;
         } else {
-            throw new IllegalArgumentException("Invalid postfix expression format. Conversion to infix failed.");
+            throw new InvalidExpression("Unsupported token: '" + token + "'. Valid tokens are variables [A-Z] or operators " + SUPPORTED_OPERATORS);
         }
     }
 
-    /**
-     * Converts an infix expression to postfix notation.
-     *
-     * @param infix The infix expression to convert.
-     * @return The converted postfix expression.
-     */
-    protected String convertInfixToPostfix(String infix) {
-        infix = infix.trim().replaceAll("\\s+", " ");
-        infix = infix.replaceAll("([()])", " $1 ");
-        infix = infix.trim().replaceAll("\\s+", " ");
-        String[] tokens = infix.split(" ");
+    if (operandCount != 1) {
+        throw new InvalidExpression("Invalid postfix expression format. Expected a single final result, but found " + operandCount + " remaining.");
+    }
+}
 
-        StringBuilder result = new StringBuilder();
-        Stack<String> stack = new Stack<>();
+/**
+ * Converts a postfix expression to infix notation.
+ *
+ * @param expressionString The postfix expression to convert.
+ * @return The converted infix expression.
+ * @throws InvalidExpression If the postfix expression is invalid.
+ */
+protected String convertPostfixToInfix(String expressionString) throws InvalidExpression {
+    Stack<String> stack = new Stack<>();
+    String[] tokens = expressionString.split(" ");
 
-        for (String token : tokens) {
-            if (isOperand(token)) {
-                result.append(token).append(" ");
-            } else if (token.equals("(")) {
-                stack.push(token);
-            } else if (token.equals(")")) {
-                while (!stack.isEmpty() && !stack.peek().equals("(")) {
-                    result.append(stack.pop()).append(" ");
-                }
-                if (!stack.isEmpty() && stack.peek().equals("(")) {
-                    stack.pop();
-                } else {
-                    throw new IllegalArgumentException("Mismatched parentheses in expression");
-                }
-            } else if (isOperator(token)) {
-                while (!stack.isEmpty() && !stack.peek().equals("(") &&
-                        ((isLeftAssociative(token) && precedence(token) <= precedence(stack.peek())) ||
-                                (!isLeftAssociative(token) && precedence(token) < precedence(stack.peek())))) {
-                    result.append(stack.pop()).append(" ");
+    for (String token : tokens) {
+        if (isValidVariable(token)) {
+            stack.push(token);
+        } else {
+            String type = operatorType(token);
+
+            switch (type) {
+                case "unary":
+                    if (stack.isEmpty()) {
+                        throw new InvalidExpression("Invalid postfix expression for unary operator '" + token + "'.");
+                    }
+                    String operand = stack.pop();
+                    String resultUnary = "(" + token + " " + operand + ")";
+                    stack.push(resultUnary);
+                    break;
+
+                case "binary":
+                    if (stack.size() < 2) {
+                        throw new InvalidExpression("Invalid postfix expression for binary operator '" + token + "'.");
+                    }
+                    String operand2 = stack.pop();
+                    String operand1 = stack.pop();
+                    String resultBinary = "(" + operand1 + " " + token + " " + operand2 + ")";
+                    stack.push(resultBinary);
+                    break;
+
+                default:
+                    throw new InvalidExpression("Invalid operator: '" + token + "'.");
+            }
+        }
+    }
+
+    if (stack.size() == 1) {
+        return stack.pop();
+    } else {
+        throw new InvalidExpression("Invalid postfix expression format. Conversion to infix failed.");
+    }
+}
+/**
+ * Converts an infix expression to postfix notation.
+ *
+ * @param infix The infix expression to convert.
+ * @return The converted postfix expression.
+ * @throws InvalidExpression if there is an error in the expression format.
+ */
+protected String convertInfixToPostfix(String infixExpression) throws InvalidExpression {
+    Stack<String> stack = new Stack<>();
+    StringBuilder postfix = new StringBuilder();
+
+    String[] tokens = infixExpression.split(" ");
+    boolean expectOperand = true;
+
+    for (String token : tokens) {
+        if (isValidVariable(token)) {
+            // If an operand is expected, append to postfix
+            if (!expectOperand) {
+                throw new InvalidExpression("Unexpected operand '" + token + "' following another operand without an operator.");
+            }
+            postfix.append(token).append(" ");
+            expectOperand = false;
+        } else if (isOperator(token)) {
+            // Handle unary vs. binary operators and enforce precedence
+            String type = operatorType(token);
+            if (type.equals("unary")) {
+                if (!expectOperand) {
+                    throw new InvalidExpression("Unexpected unary operator without operand: '" + token + "'.");
                 }
                 stack.push(token);
             } else {
-                throw new IllegalArgumentException("Invalid token in expression: " + token);
+                // Pop operators from stack according to precedence rules
+                while (!stack.isEmpty() && precedence(stack.peek()) >= precedence(token)) {
+                    postfix.append(stack.pop()).append(" ");
+                }
+                stack.push(token);
+                expectOperand = true;
             }
-        }
-
-        while (!stack.isEmpty()) {
-            if (stack.peek().equals("(") || stack.peek().equals(")")) {
-                throw new IllegalArgumentException("Mismatched parentheses in expression");
+        } else if (token.equals("(")) {
+            stack.push(token);
+        } else if (token.equals(")")) {
+            while (!stack.isEmpty() && !stack.peek().equals("(")) {
+                postfix.append(stack.pop()).append(" ");
             }
-            result.append(stack.pop()).append(" ");
+            if (!stack.isEmpty()) {
+                stack.pop();
+            } else {
+                throw new InvalidExpression("Mismatched parentheses in expression.");
+            }
+        } else {
+            throw new InvalidExpression("Invalid token: '" + token + "'.");
         }
-
-        return result.toString().trim();
     }
+
+    // Append remaining operators from stack
+    while (!stack.isEmpty()) {
+        String top = stack.pop();
+        if (top.equals("(") || top.equals(")")) {
+            throw new InvalidExpression("Mismatched parentheses in expression.");
+        }
+        postfix.append(top).append(" ");
+    }
+
+    return postfix.toString().trim();
+}
+
 
     /**
      * Checks if parentheses in an infix expression are balanced.

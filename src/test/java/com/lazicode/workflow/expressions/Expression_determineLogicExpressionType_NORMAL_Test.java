@@ -6,10 +6,10 @@ import java.lang.reflect.Method;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-class LogicExpressionPrivateMethodTest {
+class Expression_determineLogicExpressionType_NORMAL_Test {
 
     @Test
-    void testDetermineExpressionType() throws Exception {
+    void testDetermineLogicExpressionType() throws Exception {
         // Define SUPPORTED_OPERATORS as a local variable
         Set<String> SUPPORTED_OPERATORS = new HashSet<>();
         SUPPORTED_OPERATORS.add("AND");

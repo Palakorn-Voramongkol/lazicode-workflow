@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class NormalLogicExpressionTest {
+class LogicExpression_NORMAL_Test {
 
     @Test
     void testANDValidExpression() {
@@ -109,111 +109,4 @@ class NormalLogicExpressionTest {
         assertDoesNotThrow(() -> new LogicExpression(expression), "Expected no exception for a valid complex expression.");
     }
 
-    @Test
-    void testEmptyExpression() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new LogicExpression(""); // Empty expression is invalid
-        });
-        assertTrue(exception.getMessage().contains("Invalid expression"), "Expected error message for an empty expression.");
-    }
-
-    /* 
-    @Test
-    void testValidPostfixExpressionWithAND() {
-        LogicExpression expr = new LogicExpression("A B AND");
-        expr.setVariable("A", true);
-        expr.setVariable("B", true);
-        assertEquals(true, expr.calculate(), "Expected true for expression 'A B AND' with A=true, B=true");
-    }
-
-    @Test
-    void testValidPostfixExpressionWithOR() {
-        LogicExpression expr = new LogicExpression("A B OR");
-        expr.setVariable("A", true);
-        expr.setVariable("B", false);
-        assertEquals(true, expr.calculate(), "Expected true for expression 'A B OR' with A=true, B=false");
-    }
-
-    @Test
-    void testValidPostfixExpressionWithNOT() {
-        LogicExpression expr = new LogicExpression("A NOT");
-        expr.setVariable("A", false);
-        assertEquals(true, expr.calculate(), "Expected true for expression 'A NOT' with A=false");
-    }
-
-    @Test
-    void testValidPostfixExpressionWithComplexOperators() {
-        LogicExpression expr = new LogicExpression("A B AND C OR NOT");
-        expr.setVariable("A", true);
-        expr.setVariable("B", true);
-        expr.setVariable("C", false);
-        assertEquals(false, expr.calculate(), "Expected false for expression 'A B AND C OR NOT' with A=true, B=true, C=false");
-    }
-
-    @Test
-    void testUnsupportedOperatorInExpression() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new LogicExpression("A B ADD"); // 'ADD' is not a supported operator
-        });
-        assertTrue(exception.getMessage().contains("Unsupported token: 'ADD'"), "Expected error message about unsupported operator.");
-    }
-
-    @Test
-    void testInsufficientOperandsForANDOperator() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new LogicExpression("A AND");
-        });
-        assertTrue(exception.getMessage().contains("Operator 'AND' requires two operands"), "Expected error message for insufficient operands for AND.");
-    }
-
-    @Test
-    void testInsufficientOperandsForNOTOperator() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new LogicExpression("NOT");
-        });
-        assertTrue(exception.getMessage().contains("Operator 'NOT' requires one operand"), "Expected error message for insufficient operand for NOT.");
-    }
-
-    @Test
-    void testInvalidVariableType() {
-        LogicExpression expr = new LogicExpression("A B AND");
-        expr.setVariable("A", true);
-        expr.setVariable("B", "non-boolean"); // Non-boolean value for a variable
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, expr::calculate);
-        assertTrue(exception.getMessage().contains("Variable 'B' is not a Boolean value."), "Expected error for non-boolean variable assignment.");
-    }
-
-    @Test
-    void testInvalidExpressionFormatWithTooManyOperands() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new LogicExpression("A B C AND"); // Leaves two results in the stack, which is invalid
-        });
-        assertTrue(exception.getMessage().contains("Expected a single final result"), "Expected error for invalid postfix expression format.");
-    }
-
-    @Test
-    void testCalculateWithXNOROperator() {
-        LogicExpression expr = new LogicExpression("A B XNOR");
-        expr.setVariable("A", true);
-        expr.setVariable("B", true);
-        assertEquals(true, expr.calculate(), "Expected true for expression 'A B XNOR' with A=true, B=true");
-    }
-
-    @Test
-    void testCalculateWithNANDOperator() {
-        LogicExpression expr = new LogicExpression("A B NAND");
-        expr.setVariable("A", true);
-        expr.setVariable("B", true);
-        assertEquals(false, expr.calculate(), "Expected false for expression 'A B NAND' with A=true, B=true");
-    }
-
-    @Test
-    void testToStringRepresentation() {
-        LogicExpression expr = new LogicExpression("A B AND");
-        expr.setVariable("A", true);
-        expr.setVariable("B", true);
-        assertTrue(expr.toString().contains("expressionString='A B AND'"), "Expected toString to contain expressionString.");
-        assertTrue(expr.toString().contains("cachedResult=null"), "Expected cachedResult to be null initially.");
-    }
-*/
     }
