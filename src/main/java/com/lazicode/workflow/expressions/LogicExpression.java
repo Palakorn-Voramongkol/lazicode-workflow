@@ -23,20 +23,20 @@ public class LogicExpression extends Expression {
     public LogicExpression(String expressionString) {
         super(expressionString);
         expressionString = normalizeSpaces(expressionString); // Cleanse spaces
-        String expressionType = determineExpressionType(expressionString);
+        String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
 
         if (expressionType.equals("unknown")) {
             throw new IllegalArgumentException(
                                 "Invalid expression type, alow only valid infix or postfix logical expression.");
         }
         if (expressionType.equals("postfix")) {
-            validateExpression(expressionString); // Validate before proceeding
+            validateExpression(expressionString, SUPPORTED_OPERATORS); // Validate before proceeding
             infixExpression = convertPostfixToInfix(expressionString); // Convert and store the infix expression
             postfixExpression = expressionString; // Store the original postfix expression
         }    
         else {
             postfixExpression = convertInfixToPostfix(expressionString); // Convert and store the infix expression
-            validateExpression(postfixExpression); // Validate before proceeding
+            validateExpression(postfixExpression, SUPPORTED_OPERATORS); // Validate before proceeding
             infixExpression = convertPostfixToInfix(postfixExpression); // Convert and store the infix expression beautifully
         }
         
@@ -101,7 +101,8 @@ public class LogicExpression extends Expression {
         return stack.size() == 1 ? "postfix" : "unknown";
     }
         */
-    private String determineExpressionType(String expression) {
+    /* 
+    private String determineExpressionType(String expression, Set<String> SUPPORTED_OPERATORS) {
         // First, check if parentheses are balanced
         if (!isParenthesesBalanced(expression)) {
             return "unknown";
@@ -147,7 +148,7 @@ public class LogicExpression extends Expression {
         return stack.size() == 1 ? "postfix" : "unknown";
     }
         
-
+*/
     /**
      * Cleanses multiple spaces in the expression, reducing them to a single space.
      *
@@ -200,6 +201,7 @@ public class LogicExpression extends Expression {
         }
     }
 */
+/* 
     private void validateExpression(String expressionString) {
         if (expressionString == null || expressionString.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid expression: Expression cannot be empty.");
@@ -249,11 +251,13 @@ public class LogicExpression extends Expression {
                             + " remaining.");
         }
     }
-
+*/
+/* 
     private boolean isValidVariable(String token) {
         return Pattern.matches("[A-Z]", token); // Checks if the token is a single uppercase letter
     }
-
+*/
+/* 
     private String convertPostfixToInfix(String expressionString) {
         Stack<String> stack = new Stack<>();
         String[] tokens = expressionString.split(" ");
@@ -300,7 +304,7 @@ public class LogicExpression extends Expression {
             throw new IllegalArgumentException("Invalid postfix expression format. Conversion to infix failed.");
         }
     }
-    
+*/
 /* 
     private String convertPostfixToInfix(String expressionString) {
         Stack<String> stack = new Stack<>();
@@ -349,6 +353,7 @@ public class LogicExpression extends Expression {
      * @param infix The infix expression to convert.
      * @return The postfix notation of the given infix expression.
      */
+    /* 
     private String convertInfixToPostfix(String infix) {
         // Normalize spaces and insert spaces around parentheses
         infix = infix.trim().replaceAll("\\s+", " ");
@@ -403,14 +408,15 @@ public class LogicExpression extends Expression {
         // Return the postfix expression without trailing whitespace
         return result.toString().trim();
     }
-
-    private boolean isOperand(String token) {
+    */
+    @Override
+    protected boolean isOperand(String token) {
         // Assuming operands are variables represented by letters or strings not
         // matching operators
         return !isOperator(token) && !token.equals("(") && !token.equals(")");
     }
-
-    private boolean isOperator(String token) {
+    @Override
+    protected boolean isOperator(String token) {
         switch (token) {
             case "NOT":
             case "NAND":
@@ -424,8 +430,8 @@ public class LogicExpression extends Expression {
                 return false;
         }
     }
-
-    private int precedence(String operator) {
+    @Override
+    protected int precedence(String operator) {
         switch (operator) {
             case "NOT":
                 return 4; // Highest precedence
@@ -443,7 +449,8 @@ public class LogicExpression extends Expression {
         }
     }
 
-    private String operatorType(String operator) {
+    @Override
+    protected String operatorType(String operator) {
         switch (operator) {
             case "NOT":
                 return "unary";
@@ -458,35 +465,17 @@ public class LogicExpression extends Expression {
                 return "none";
         }
     }
-
-    private boolean isLeftAssociative(String op) {
+    @Override
+    protected boolean isLeftAssociative(String operator) {
         // 'NOT' is right-associative; others are left-associative
-        return !op.equals("NOT");
-    }
-
-    /**
-     * Checks if parentheses in an infix expression are balanced.
-     * 
-     * @param expression The infix expression to validate.
-     * @return true if the parentheses are balanced, false otherwise.
-     */
-    private boolean isParenthesesBalanced(String expression) {
-        Stack<Character> stack = new Stack<>();
-
-        for (char ch : expression.toCharArray()) {
-            if (ch == '(') {
-                stack.push(ch);
-            } else if (ch == ')') {
-                if (stack.isEmpty()) {
-                    return false; // Unmatched closing parenthesis
-                }
-                stack.pop(); // Match found, pop the opening parenthesis
-            }
+        switch (operator) {
+            case "NOT":
+                return true;
+            default:
+                return false;
         }
-
-        // If stack is empty, all opening parentheses were matched
-        return stack.isEmpty();
     }
+
 
     @Override
     protected Object performCalculation() {

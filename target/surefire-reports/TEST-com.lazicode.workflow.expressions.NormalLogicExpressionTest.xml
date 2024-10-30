@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.044" tests="16" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.047" tests="16" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -12,7 +12,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="TH"/>
     <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk@17/17.0.12/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/palakorn/projects/lazicode-workflow/target/surefire/surefirebooter-20241030091327067_3.jar /Users/palakorn/projects/lazicode-workflow/target/surefire 2024-10-30T09-13-27_002-jvmRun1 surefire-20241030091327067_1tmp surefire_0-20241030091327067_2tmp"/>
+    <property name="sun.java.command" value="/Users/palakorn/projects/lazicode-workflow/target/surefire/surefirebooter-20241030100040910_3.jar /Users/palakorn/projects/lazicode-workflow/target/surefire 2024-10-30T10-00-40_861-jvmRun1 surefire-20241030100040910_1tmp surefire_0-20241030100040910_2tmp"/>
     <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/Users/palakorn/projects/lazicode-workflow/target/test-classes:/Users/palakorn/projects/lazicode-workflow/target/classes:/Users/palakorn/.m2/repository/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar:/Users/palakorn/.m2/repository/ch/qos/logback/logback-classic/1.4.11/logback-classic-1.4.11.jar:/Users/palakorn/.m2/repository/ch/qos/logback/logback-core/1.4.11/logback-core-1.4.11.jar:/Users/palakorn/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.3/junit-jupiter-api-5.9.3.jar:/Users/palakorn/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/palakorn/.m2/repository/org/junit/platform/junit-platform-commons/1.9.3/junit-platform-commons-1.9.3.jar:/Users/palakorn/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/palakorn/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.3/junit-jupiter-engine-5.9.3.jar:/Users/palakorn/.m2/repository/org/junit/platform/junit-platform-engine/1.9.3/junit-platform-engine-1.9.3.jar:/Users/palakorn/.m2/repository/org/json/json/20230618/json-20230618.jar:/Users/palakorn/.m2/repository/net/objecthunter/exp4j/0.4.8/exp4j-0.4.8.jar:"/>
@@ -28,7 +28,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
-    <property name="surefire.real.class.path" value="/Users/palakorn/projects/lazicode-workflow/target/surefire/surefirebooter-20241030091327067_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/palakorn/projects/lazicode-workflow/target/surefire/surefirebooter-20241030100040910_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.runtime.version" value="17.0.12+0"/>
@@ -55,20 +55,20 @@
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testXORValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.016"/>
-  <testcase name="testNOTValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.005"/>
+  <testcase name="testXORValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.022"/>
+  <testcase name="testNOTValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.002"/>
   <testcase name="testXNORValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
   <testcase name="testEmptyExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
-  <testcase name="testInvalidVariableToken" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
+  <testcase name="testInvalidVariableToken" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
   <testcase name="testNORValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
-  <testcase name="testNANDValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
+  <testcase name="testNANDValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
   <testcase name="testInsufficientOperandsForANDOperator" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
   <testcase name="testInvalidExpressionFormatWithTooManyOperands" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
-  <testcase name="testAND_NOTValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
+  <testcase name="testAND_NOTValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
   <testcase name="testInsufficientOperandForNOTOperator" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
-  <testcase name="testUnsupportedOperatorInExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
+  <testcase name="testUnsupportedOperatorInExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
   <testcase name="testANDValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
-  <testcase name="testComplexValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
+  <testcase name="testComplexValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0.001"/>
   <testcase name="testORValidExpression" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
   <testcase name="testInsufficientOperandsForOROperator" classname="com.lazicode.workflow.expressions.NormalLogicExpressionTest" time="0"/>
 </testsuite>
