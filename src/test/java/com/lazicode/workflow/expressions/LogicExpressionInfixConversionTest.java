@@ -24,6 +24,12 @@ class LogicExpressionInfixConversionTest {
     }
 
     @Test
+    void testNOTNOTConversion() {
+        LogicExpression expr = new LogicExpression("A NOT NOT");
+        assertEquals("(NOT (NOT A))", expr.getInfixExpression(), "Expected infix conversion for 'A NOT NOT' to be '(NOT (NOT A))'.");
+    }
+
+    @Test
     void testComplexExpressionWithANDORNOT() {
         // Original expression in postfix: ((A AND B) OR (NOT C))
         LogicExpression expr = new LogicExpression("A B AND C NOT OR");

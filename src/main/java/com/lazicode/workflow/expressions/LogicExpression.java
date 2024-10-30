@@ -26,7 +26,7 @@ public class LogicExpression extends Expression {
 
         if (expressionType.equals("unknown")) {
             throw new IllegalArgumentException(
-                                "Invalid expression type, alow only valid infix or postfix logical expression.");
+                                "Invalid expression type, allow only valid infix or postfix logical expressions.");
         }
         if (expressionType.equals("postfix")) {
             validateExpression(expressionString, SUPPORTED_OPERATORS); // Validate before proceeding
