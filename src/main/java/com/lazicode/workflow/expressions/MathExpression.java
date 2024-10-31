@@ -37,14 +37,14 @@ public class MathExpression extends Expression {
      *
      * @param expressionString The mathematical expression string in infix or postfix notation.
      * @throws com.lazicode.workflow.exceptions.InvalidExpression 
-     * @throws IllegalArgumentException If the expression is invalid or unsupported.
+     * @throws InvalidExpression If the expression is invalid or unsupported.
      */
     public MathExpression(String expressionString) throws InvalidExpression {
         super(expressionString);
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
 
         if (expressionType.equals("unknown")) {
-            throw new IllegalArgumentException(
+            throw new InvalidExpression(
                     "Invalid expression type, allow only valid infix or postfix mathematical expressions.");
         }
         if (expressionType.equals("postfix")) {

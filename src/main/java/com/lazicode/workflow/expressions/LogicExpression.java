@@ -31,7 +31,7 @@ public class LogicExpression extends Expression {
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
 
         if (expressionType.equals("unknown")) {
-            throw new IllegalArgumentException(
+            throw new InvalidExpression(
                     "Invalid expression type, allow only valid infix or postfix logical expressions.");
         }
         if (expressionType.equals("postfix")) {
