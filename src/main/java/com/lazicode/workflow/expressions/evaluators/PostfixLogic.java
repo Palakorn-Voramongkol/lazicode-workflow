@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class PostfixLogicEval {
+public class PostfixLogic {
 
     // Evaluates a postfix logical expression using recursive evaluation (no short-circuit)
-    public static Boolean evaluatePostfixShortCircuit(String expression, Map<String, Boolean> values) {
+    public static Boolean evalShortCircuit(String expression, Map<String, Boolean> values) {
         if (expression == null || expression.isEmpty()) {
             return false;  // Empty expression case
         }
@@ -80,7 +80,7 @@ public class PostfixLogicEval {
     }
 
     // Evaluates a postfix logical expression using an iterative approach (no short-circuit)
-    public static Boolean evaluatePostfix(String expression, Map<String, Boolean> values) {
+    public static Boolean eval(String expression, Map<String, Boolean> values) {
         if (expression == null || expression.isEmpty()) {
             return false;  // Empty expression case
         }

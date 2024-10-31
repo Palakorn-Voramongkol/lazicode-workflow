@@ -158,8 +158,6 @@ public abstract class Expression implements JSONPersistable {
         
     }
 
-    protected abstract Object applyOperator(String operator, List<?> operands);
-
     /**
      * Returns the cached output of the expression calculation.
      *

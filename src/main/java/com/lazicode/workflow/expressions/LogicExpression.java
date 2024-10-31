@@ -6,7 +6,6 @@ import java.util.Collections;
 
 import com.lazicode.workflow.exceptions.InvalidExpression;
 
-import java.util.List;
 
 public class LogicExpression extends Expression {
 
@@ -144,15 +143,9 @@ public class LogicExpression extends Expression {
                 '}';
     }
 
-    @Override
-    protected Object applyOperator(String operator, List<?> operands) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'applyOperator'");
-    }
 
     @Override
     protected Object performCalculation() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'performCalculation'");
+        return this.calculate();
     }
 }
