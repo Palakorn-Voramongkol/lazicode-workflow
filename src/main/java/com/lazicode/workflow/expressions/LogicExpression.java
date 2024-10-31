@@ -23,7 +23,7 @@ public class LogicExpression extends Expression {
 
     public LogicExpression(String expressionString) throws com.lazicode.workflow.exceptions.InvalidExpression {
         super(expressionString);
-        
+
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
 
         if (expressionType.equals("unknown")) {
@@ -45,9 +45,11 @@ public class LogicExpression extends Expression {
 
     @Override
     protected boolean isOperand(String token) {
-        // Assuming operands are variables represented by letters or strings not
-        // matching operators
-        return !isOperator(token) && !token.equals("(") && !token.equals(")");
+        // Only consider single letters A-Z or a-z as valid operands
+        return !isOperator(token)
+                && !token.equals("(")
+                && !token.equals(")")
+                && token.matches("[A-Za-z]");
     }
 
     @Override
@@ -112,7 +114,6 @@ public class LogicExpression extends Expression {
                 return false;
         }
     }
-
 
     @Override
     public boolean isValid() {
