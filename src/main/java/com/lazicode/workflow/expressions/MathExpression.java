@@ -27,6 +27,7 @@ public class MathExpression extends Expression {
         ops.add("*");
         ops.add("/");
         ops.add("%");
+        ops.add("^");
         // Exponentiation '^' is excluded as per requirements
         SUPPORTED_OPERATORS = Collections.unmodifiableSet(ops); // Make the set unmodifiable
     }
@@ -87,6 +88,8 @@ public class MathExpression extends Expression {
             case "+":
             case "-":
                 return 2; // Lower precedence
+            case "^":
+                return 4;
             default:
                 return 0; // Unsupported operators
         }
@@ -121,6 +124,7 @@ public class MathExpression extends Expression {
             case "*":
             case "/":
             case "%":
+            case "^":
                 return "binary";
             default:
                 return "none"; // Indicates unsupported or invalid operator
@@ -174,4 +178,5 @@ public class MathExpression extends Expression {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'performCalculation'");
     }
+    
 }

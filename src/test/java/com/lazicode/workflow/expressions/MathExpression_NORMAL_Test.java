@@ -32,19 +32,22 @@ class MathExpression_NORMAL_Test {
     }
 
     @Test
+    void testPowerValidExpression() {
+        assertDoesNotThrow(() -> new MathExpression("A B ^"), "Expected no exception for a valid expression 'A B +'.");
+    }
+
+    @Test
     void testComplexExpressionWithMultipleOperators() {
         assertDoesNotThrow(() -> new MathExpression("A B + C D / * E %"),
                 "Expected no exception for a valid complex expression 'A B + C D / * E %'.");
     }
 
     @Test
-    void testUnsupportedOperatorInExpression() {
-        InvalidExpression exception = assertThrows(InvalidExpression.class, () -> {
-            new MathExpression("A B ^"); // '^' is not a supported operator
-        });
-        assertTrue(exception.getMessage().contains("Invalid token found in expression: '^'"),
-                "Expected error message about unsupported operator.");
+    void testComplexExpressionWithExponentiationAndMultipleOperators() {
+        assertDoesNotThrow(() -> new MathExpression("A B ^ C D / * E %"),
+                "Expected no exception for a valid complex expression 'A B ^ C D / * E %'.");
     }
+
 
     @Test
     void testInsufficientOperandsForAdditionOperator() {
