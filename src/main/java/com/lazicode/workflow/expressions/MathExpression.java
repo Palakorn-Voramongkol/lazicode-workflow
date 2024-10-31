@@ -39,7 +39,7 @@ public class MathExpression extends Expression {
      * @throws com.lazicode.workflow.exceptions.InvalidExpression 
      * @throws IllegalArgumentException If the expression is invalid or unsupported.
      */
-    public MathExpression(String expressionString) throws InvalidExpression, com.lazicode.workflow.exceptions.InvalidExpression {
+    public MathExpression(String expressionString) throws InvalidExpression {
         super(expressionString);
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
 
@@ -58,17 +58,7 @@ public class MathExpression extends Expression {
         }
     }
 
-    /**
-     * Determines if a token is a valid operand. For MathExpression, operands are
-     * single uppercase letters (e.g., A, B, C).
-     *
-     * @param token The token to evaluate.
-     * @return true if the token is a single uppercase letter; false otherwise.
-     */
-    @Override
-    protected boolean isOperand(String token) {
-        return Pattern.matches("[A-Z]", token);
-    }
+
 
     /**
      * Determines if a token is a supported operator in mathematical expressions.
@@ -102,6 +92,21 @@ public class MathExpression extends Expression {
         }
     }
 
+    /**
+     * Determines if a token is a valid operand. For MathExpression, operands are
+     * single uppercase letters (e.g., A, B, C).
+     *
+     * @param token The token to evaluate.
+     * @return true if the token is a single uppercase letter; false otherwise.
+     */
+    @Override
+    protected boolean isOperand(String token) {
+        // Only consider single letters A-Z or a-z as valid operands
+        return !isOperator(token)
+                && !token.equals("(")
+                && !token.equals(")")
+                && token.matches("[A-Za-z]");
+    }
     /**
      * Determines the type of an operator: binary or none.
      *
@@ -145,6 +150,17 @@ public class MathExpression extends Expression {
     public boolean isValid() {
         // Since the constructor validates the expression, return true if the object is created successfully
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "LogicExpression{" +
+                "expressionString='" + getExpressionString() + '\'' +
+                ", infixExpression='" + infixExpression + '\'' +
+                ", variables=" + getVariables() +
+                ", variableValues=" + getVariableValues() +
+                ", output=" + getOutput() +
+                '}';
     }
 
     @Override

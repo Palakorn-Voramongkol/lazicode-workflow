@@ -235,6 +235,46 @@ public abstract class Expression implements JSONPersistable {
      */
     protected abstract boolean isLeftAssociative(String operator);
 
+    public static boolean hasParentheses(String expression) {
+        return expression.contains("(") || expression.contains(")");
+    }
+
+    /**
+     * Checks if the expression is in infix notation by ensuring each operand is separated
+     * by a binary operator.
+     *
+     * @param expression The expression to evaluate.
+     * @return true if the expression follows infix notation; false otherwise.
+     */
+    private boolean isInfix(String expression) {
+        // Remove all parentheses from the expression for simple infix evaluation
+        expression = expression.replaceAll("[()]", "");
+        
+        String[] tokens = expression.trim().split("\\s+");
+
+        boolean expectingOperand = true; // Track alternation between operand and operator
+
+        for (String token : tokens) {
+            if (isOperand(token)) {
+                if (!expectingOperand) {
+                    return false; // Two operands in a row without operator in between
+                }
+                expectingOperand = false; // After operand, expect operator next
+            } else if (isOperator(token) && operatorType(token).equals("binary")) {
+                if (expectingOperand) {
+                    return false; // Two operators in a row or operator at the beginning
+                }
+                expectingOperand = true; // After operator, expect operand next
+            } else {
+                // Any other unexpected token (unsupported operator, invalid characters)
+                return false;
+            }
+        }
+
+        // Ensure the expression ends with an operand
+        return !expectingOperand;
+    }
+
     /**
      * Determines if an expression is infix, postfix, or unknown.
      *
@@ -244,29 +284,50 @@ public abstract class Expression implements JSONPersistable {
      *         otherwise.
      */
     protected String determineExpressionType(String expression, Set<String> SUPPORTED_OPERATORS) {
-        if (!isParenthesesBalanced(expression)) {
-            return "unknown";
-        }
-
-        expression = expression.trim().replaceAll("\\s+", " ");
-
-        boolean hasInfixOperators = Pattern.compile("\\b(" + String.join("|", SUPPORTED_OPERATORS) + ")\\b")
-                .matcher(expression).find();
-        boolean hasParentheses = expression.contains("(") || expression.contains(")");
-
-        if (hasInfixOperators && hasParentheses) {
+        
+        if (hasParentheses(expression) || isInfix(expression)) {
             return "infix";
         }
 
+        if (!isParenthesesBalanced(expression)) {
+            return "unknown";
+        }
+    
+        expression = expression.trim().replaceAll("\\s+", " ");
+    
+        // Escape each operator individually for regex pattern matching
+        Set<String> escapedOperators = new HashSet<>();
+        for (String op : SUPPORTED_OPERATORS) {
+            escapedOperators.add(Pattern.quote(op));
+        }
+    
+        // Use escaped operators to compile a regex for infix check
+        String infixPattern = "\\(.*\\b(" + String.join("|", escapedOperators) + ")\\b.*\\)";
+        boolean hasInfixOperators = Pattern.compile(infixPattern).matcher(expression).find();
+    
+        boolean hasParentheses = expression.contains("(") || expression.contains(")");
+    
+        if (hasInfixOperators && hasParentheses) {
+            return "infix";
+        }
+    
         String[] tokens = expression.split(" ");
         Stack<String> stack = new Stack<>();
+        boolean lastWasOperand = false;
 
         for (String token : tokens) {
             if (Pattern.matches("[A-Z]", token)) {
+                if (lastWasOperand) {
+                    // Found two consecutive operands, indicating postfix notation
+                    return "postfix";
+                } else {
+                    lastWasOperand = true;
+                }
                 stack.push(token);
             } else if (SUPPORTED_OPERATORS.contains(token)) {
+                lastWasOperand = false;
                 String type = operatorType(token);
-
+    
                 if (type.equals("unary")) {
                     if (stack.isEmpty()) {
                         return "unknown";
@@ -283,9 +344,10 @@ public abstract class Expression implements JSONPersistable {
                 return "unknown";
             }
         }
-
+    
         return stack.size() == 1 ? "postfix" : "unknown";
     }
+    
 
     /**
      * Validates the Postfix format of a given expression.
@@ -431,7 +493,7 @@ public abstract class Expression implements JSONPersistable {
         }
 
         for (String token : tokens) {
-            System.out.println("Processing token: " + token);
+
             if (!isOperator(token) && !isOperand(token) && !isParenthesis(token)) {
                 throw new InvalidExpression("Invalid token detected: " + token);
             }
