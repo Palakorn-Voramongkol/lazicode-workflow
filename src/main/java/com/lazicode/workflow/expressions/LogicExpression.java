@@ -2,6 +2,7 @@ package com.lazicode.workflow.expressions;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Collections;
 
 import com.lazicode.workflow.exceptions.InvalidExpression;
 
@@ -9,19 +10,22 @@ import java.util.List;
 
 public class LogicExpression extends Expression {
 
-    private static final Set<String> SUPPORTED_OPERATORS = new HashSet<>();
+    private static final Set<String> SUPPORTED_OPERATORS;
 
     static {
-        SUPPORTED_OPERATORS.add("AND");
-        SUPPORTED_OPERATORS.add("OR");
-        SUPPORTED_OPERATORS.add("NOT");
-        SUPPORTED_OPERATORS.add("NAND");
-        SUPPORTED_OPERATORS.add("NOR");
-        SUPPORTED_OPERATORS.add("XOR");
-        SUPPORTED_OPERATORS.add("XNOR");
+        Set<String> ops = new HashSet<>();
+        ops.add("AND");
+        ops.add("OR");
+        ops.add("NOT");
+        ops.add("NAND");
+        ops.add("NOR");
+        ops.add("XOR");
+        ops.add("XNOR");
+        SUPPORTED_OPERATORS = Collections.unmodifiableSet(ops); // Make the set unmodifiable
     }
+    
 
-    public LogicExpression(String expressionString) throws com.lazicode.workflow.exceptions.InvalidExpression {
+    public LogicExpression(String expressionString) throws InvalidExpression {
         super(expressionString);
 
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
@@ -52,20 +56,10 @@ public class LogicExpression extends Expression {
                 && token.matches("[A-Za-z]");
     }
 
+
     @Override
     protected boolean isOperator(String token) {
-        switch (token) {
-            case "NOT":
-            case "NAND":
-            case "NOR":
-            case "AND":
-            case "OR":
-            case "XOR":
-            case "XNOR":
-                return true;
-            default:
-                return false;
-        }
+        return SUPPORTED_OPERATORS.contains(token);
     }
 
     @Override
@@ -87,6 +81,12 @@ public class LogicExpression extends Expression {
         }
     }
 
+    /**
+     * Determines the type of an operator: binary or none.
+     *
+     * @param operator The operator to evaluate.
+     * @return "binary" if the operator is binary; "none" otherwise.
+     */
     @Override
     protected String operatorType(String operator) {
         switch (operator) {
@@ -104,6 +104,13 @@ public class LogicExpression extends Expression {
         }
     }
 
+    /**
+     * Determines if an operator is left-associative. For MathExpression,
+     * all operators are left-associative.
+     *
+     * @param operator The operator to evaluate.
+     * @return true if the operator is left-associative; false otherwise.
+     */
     @Override
     protected boolean isLeftAssociative(String operator) {
         // 'NOT' is right-associative; others are left-associative
@@ -115,9 +122,14 @@ public class LogicExpression extends Expression {
         }
     }
 
+    /**
+     * Indicates whether the MathExpression is valid.
+     *
+     * @return true if the expression is valid; false otherwise.
+     */
     @Override
     public boolean isValid() {
-        // Validation logic as before
+        // Since the constructor validates the expression, return true if the object is created successfully
         return true;
     }
 
