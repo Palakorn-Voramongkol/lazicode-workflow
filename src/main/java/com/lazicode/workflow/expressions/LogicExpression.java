@@ -2,6 +2,7 @@ package com.lazicode.workflow.expressions;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Collections;
 
 import com.lazicode.workflow.exceptions.InvalidExpression;
 
@@ -9,17 +10,20 @@ import java.util.List;
 
 public class LogicExpression extends Expression {
 
-    private static final Set<String> SUPPORTED_OPERATORS = new HashSet<>();
+    private static final Set<String> SUPPORTED_OPERATORS;
 
     static {
-        SUPPORTED_OPERATORS.add("AND");
-        SUPPORTED_OPERATORS.add("OR");
-        SUPPORTED_OPERATORS.add("NOT");
-        SUPPORTED_OPERATORS.add("NAND");
-        SUPPORTED_OPERATORS.add("NOR");
-        SUPPORTED_OPERATORS.add("XOR");
-        SUPPORTED_OPERATORS.add("XNOR");
+        Set<String> ops = new HashSet<>();
+        ops.add("AND");
+        ops.add("OR");
+        ops.add("NOT");
+        ops.add("NAND");
+        ops.add("NOR");
+        ops.add("XOR");
+        ops.add("XNOR");
+        SUPPORTED_OPERATORS = Collections.unmodifiableSet(ops); // Make the set unmodifiable
     }
+    
 
     public LogicExpression(String expressionString) throws com.lazicode.workflow.exceptions.InvalidExpression {
         super(expressionString);

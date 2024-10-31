@@ -135,9 +135,6 @@ public class MathExpression extends Expression {
         return true;
     }
 
-    
-
-
 
     /**
      * Indicates whether the MathExpression is valid.
