@@ -168,12 +168,6 @@ public class MathExpression extends Expression {
     }
 
     @Override
-    protected Object applyOperator(String operator, List<?> operands) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'applyOperator'");
-    }
-
-    @Override
     protected Object performCalculation() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'performCalculation'");

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public class PostfixMathEval {
+public class PostfixMath {
 
     public static Double eval(String expression, Map<String, Double> values) {
         Stack<Double> stack = new Stack<>();

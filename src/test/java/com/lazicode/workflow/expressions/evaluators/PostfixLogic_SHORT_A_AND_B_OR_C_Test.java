@@ -5,7 +5,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LogicalExpression_SHORT_A_AND_B_OR_C_Test {
+class PostfixLogic_SHORT_A_AND_B_OR_C_Test {
 
     // Helper function to create the expression A AND B OR C in postfix notation as a String
     private String createExpression() {
@@ -20,7 +20,7 @@ class LogicalExpression_SHORT_A_AND_B_OR_C_Test {
         valueMap.put("C", c);
 
         String expression = createExpression();
-        Boolean result = PostfixLogicEval.evaluatePostfixShortCircuit(expression, valueMap);
+        Boolean result = PostfixLogic.evalShortCircuit(expression, valueMap);
 
         assertEquals(expected, result, String.format("Failed for A=%s, B=%s, C=%s", a, b, c));
     }
