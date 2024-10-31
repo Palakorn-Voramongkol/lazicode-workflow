@@ -39,7 +39,7 @@ public abstract class Expression implements JSONPersistable {
     public Expression(String expressionString) throws InvalidExpression {
 
         this.expressionString = ExpressionUtils.normalizeSpaces(expressionString); // Cleanse spaces
-
+        validateExpression(this.expressionString);
         this.variables = extractVariables(expressionString);
         this.variableValues = new HashMap<>();
         this.output = null;
@@ -113,13 +113,13 @@ public abstract class Expression implements JSONPersistable {
      *
      * @param variable The variable name.
      * @return The value of the specified variable.
-     * @throws IllegalArgumentException If the variable is not set.
+     * @throws InvalidExpression If the variable is not set.
      */
-    public Object getVariable(String variable) {
+    public Object getVariable(String variable) throws InvalidExpression{
         if (variableValues.containsKey(variable)) {
             return variableValues.get(variable);
         } else {
-            throw new IllegalArgumentException("Variable " + variable + " has not been set.");
+            throw new InvalidExpression("Variable " + variable + " has not been set.");
         }
     }
 
@@ -128,15 +128,15 @@ public abstract class Expression implements JSONPersistable {
      *
      * @param variable The variable name.
      * @param value    The value to assign to the variable.
-     * @throws IllegalArgumentException If the variable is not part of the
+     * @throws InvalidExpression If the variable is not part of the
      *                                  expression.
      */
-    public void setVariable(String variable, Object value) {
+    public void setVariable(String variable, Object value) throws InvalidExpression{
         if (variables.contains(variable)) {
             variableValues.put(variable, value);
             output = null; // Reset output to null as the expression has changed
         } else {
-            throw new IllegalArgumentException("Variable " + variable + " is not part of the expression.");
+            throw new InvalidExpression("Variable " + variable + " is not part of the expression.");
         }
     }
 
@@ -145,20 +145,17 @@ public abstract class Expression implements JSONPersistable {
      * reuse.
      *
      * @return The calculated result of the expression.
-     * @throws IllegalArgumentException If the calculation fails.
+     * @throws InvalidExpression If the calculation fails.
      */
     public Object calculate() {
         if (output != null) {
             return output; // Use cached result if available
         }
 
-        try {
-            output = performCalculation();
-            return output;
-        } catch (IllegalArgumentException e) {
-            output = null; // Reset output if calculation fails
-            throw e;
-        }
+        
+        output = performCalculation();
+        return output;
+        
     }
 
     protected abstract Object applyOperator(String operator, List<?> operands);
@@ -273,6 +270,23 @@ public abstract class Expression implements JSONPersistable {
 
         // Ensure the expression ends with an operand
         return !expectingOperand;
+    }
+
+    /**
+     * Validates that the expression contains only valid operands and operators.
+     * Throws an exception if an invalid token is found.
+     *
+     * @param expression The expression to validate.
+     * @throws InvalidExpression if an invalid operand or operator is found.
+     */
+    public void validateExpression(String expression) throws InvalidExpression {
+        String[] tokens = expression.trim().split("\\s+");
+
+        for (String token : tokens) {
+            if (!isOperand(token) && !isOperator(token) && !token.equals("(") && !token.equals(")")) {
+                throw new InvalidExpression("Invalid token found in expression: '" + token + "'");
+            }
+        }
     }
 
     /**
