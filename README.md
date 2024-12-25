@@ -2,6 +2,64 @@
 
 Welcome to the **LaziCode Workflow Framework**, an open-source Java library meticulously crafted to simplify the creation, management, and execution of complex workflows. Whether you're building automation pipelines, orchestrating business processes, or managing intricate data flows, our framework provides a robust and flexible foundation to streamline your workflow development.
 
+## **📑 Table of Contents**
+
+- [**LaziCode Workflow Framework**](#lazicode-workflow-framework)
+  - [**📑 Table of Contents**](#-table-of-contents)
+  - [**🔍 Overview**](#-overview)
+  - [**🚀 Key Features**](#-key-features)
+    - [**1. Modular Node Architecture**](#1-modular-node-architecture)
+    - [**2. Powerful Expression Handling**](#2-powerful-expression-handling)
+    - [**3. Comprehensive Evaluation Engines**](#3-comprehensive-evaluation-engines)
+    - [**4. JSON Serialization**](#4-json-serialization)
+    - [**5. Extensible Interfaces**](#5-extensible-interfaces)
+    - [**6. Open-Source Freedom**](#6-open-source-freedom)
+  - [**📦 Getting Started**](#-getting-started)
+    - [**Installation**](#installation)
+    - [**Basic Usage**](#basic-usage)
+  - [**🧩 Detailed Components**](#-detailed-components)
+    - [**1. `Node` Abstract Class**](#1-node-abstract-class)
+      - [**Package:**](#package)
+      - [**Overview:**](#overview)
+      - [**Key Features:**](#key-features)
+      - [**Design Considerations:**](#design-considerations)
+    - [**2. Expression Evaluation Classes**](#2-expression-evaluation-classes)
+      - [**2.1. `Expression` Abstract Class**](#21-expression-abstract-class)
+        - [**Package:**](#package-1)
+        - [**Overview:**](#overview-1)
+        - [**Key Features:**](#key-features-1)
+        - [**Design Considerations:**](#design-considerations-1)
+      - [**2.2. `LogicExpression` Class**](#22-logicexpression-class)
+        - [**Package:**](#package-2)
+        - [**Overview:**](#overview-2)
+        - [**Key Features:**](#key-features-2)
+        - [**Design Considerations:**](#design-considerations-2)
+      - [**2.3. `MathExpression` Class**](#23-mathexpression-class)
+        - [**Package:**](#package-3)
+        - [**Overview:**](#overview-3)
+        - [**Key Features:**](#key-features-3)
+        - [**Design Considerations:**](#design-considerations-3)
+    - [**3. Expression Evaluators**](#3-expression-evaluators)
+      - [**3.1. `PostfixLogic` Class**](#31-postfixlogic-class)
+        - [**Package:**](#package-4)
+        - [**Overview:**](#overview-4)
+        - [**Key Features:**](#key-features-4)
+        - [**Design Considerations:**](#design-considerations-4)
+      - [**3.2. `PostfixMath` Class**](#32-postfixmath-class)
+        - [**Package:**](#package-5)
+        - [**Overview:**](#overview-5)
+        - [**Key Features:**](#key-features-5)
+        - [**Design Considerations:**](#design-considerations-5)
+    - [**4. `ContainerAble` Interface**](#4-containerable-interface)
+      - [**Package:**](#package-6)
+      - [**Overview:**](#overview-6)
+      - [**Key Features:**](#key-features-6)
+      - [**Design Considerations:**](#design-considerations-6)
+  - [**🤝 Contributing**](#-contributing)
+  - [**📄 Documentation**](#-documentation)
+  - [**📫 Support**](#-support)
+  - [**📜 License**](#-license)
+
 ## **🔍 Overview**
 
 The **LaziCode Workflow Framework** empowers developers to construct workflows as interconnected nodes, each capable of performing sophisticated logical and mathematical operations. By abstracting the complexities of workflow management and expression evaluation, our framework allows you to focus on defining the logic and flow of your processes with ease and precision.
@@ -37,6 +95,7 @@ The **LaziCode Workflow Framework** empowers developers to construct workflows a
 ## **📦 Getting Started**
 
 ### **Installation**
+
 Add the LaziCode Workflow Framework to your project using Maven:
 
 ```xml
@@ -355,6 +414,10 @@ Comprehensive documentation is available [here](https://github.com/lazicode/work
 ## **📫 Support**
 
 For questions, issues, or suggestions, please open an issue on our [GitHub repository](https://github.com/lazicode/workflow-framework/issues) or reach out to our community channels.
+
+## **📜 License**
+
+This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this software as per the terms of the license.
 
 ---
 
