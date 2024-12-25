@@ -1,15 +1,14 @@
 package com.lazicode.workflow.expressions;
 
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.Collections;
-import java.util.regex.Pattern;
 
 import com.lazicode.workflow.exceptions.InvalidExpression;
+import com.lazicode.workflow.expressions.evaluators.PostfixLogic;
+import com.lazicode.workflow.expressions.evaluators.PostfixMath;
 
-import java.util.Stack;
-import java.util.List;
-import java.util.Arrays;
 
 /**
  * Class representing a mathematical expression. It supports infix and postfix notations
@@ -161,16 +160,23 @@ public class MathExpression extends Expression {
         return "LogicExpression{" +
                 "expressionString='" + getExpressionString() + '\'' +
                 ", infixExpression='" + infixExpression + '\'' +
-                ", variables=" + getVariables() +
-                ", variableValues=" + getVariableValues() +
+                ", postExpression='" + postfixExpression + '\'' +
+                ", variables=" + getVariables()  + '\'' +
+                ", variableValues=" + getVariableValues()  + '\'' +
                 ", output=" + getOutput() +
                 '}';
     }
 
+
     @Override
     protected Object performCalculation() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'performCalculation'");
+        // Cast variableValues to HashMap<String, Boolean>
+        @SuppressWarnings("unchecked")
+        HashMap<String, Double> doubleValues = (HashMap<String, Double>) (HashMap<?, ?>) getVariableValues();
+
+        // Call the evalShortCircuit function
+        Double result = PostfixMath.eval(this.postfixExpression, doubleValues);
+        return result;
     }
     
 }

@@ -147,15 +147,12 @@ public abstract class Expression implements JSONPersistable {
      * @return The calculated result of the expression.
      * @throws InvalidExpression If the calculation fails.
      */
-    public Object calculate() {
-        if (output != null) {
-            return output; // Use cached result if available
-        }
+    private Object calculate() {
 
-        
+        // Set the output cache
         output = performCalculation();
         return output;
-        
+
     }
 
     /**
@@ -163,18 +160,11 @@ public abstract class Expression implements JSONPersistable {
      *
      * @return The cached output.
      */
-    protected Object getOutput() {
+    public Object getOutput() {
+        output = calculate();
         return output;
     }
 
-    /**
-     * Sets the output of the expression.
-     *
-     * @param output The output to set.
-     */
-    protected void setOutput(Object output) {
-        this.output = output;
-    }
 
     /**
      * Abstract method for performing the calculation of the expression.
@@ -278,6 +268,8 @@ public abstract class Expression implements JSONPersistable {
      * @throws InvalidExpression if an invalid operand or operator is found.
      */
     public void validateExpression(String expression) throws InvalidExpression {
+
+        expression = addSpacesAroundParentheses(expression);
         String[] tokens = expression.trim().split("\\s+");
 
         for (String token : tokens) {
@@ -296,6 +288,8 @@ public abstract class Expression implements JSONPersistable {
      *         otherwise.
      */
     protected String determineExpressionType(String expression, Set<String> SUPPORTED_OPERATORS) {
+
+        
         
         if (hasParentheses(expression) || isInfix(expression)) {
             return "infix";
@@ -596,6 +590,17 @@ public abstract class Expression implements JSONPersistable {
 
     protected boolean isParenthesis(String token) {
         return token.equals("(") || token.equals(")");
+    }
+
+    protected String addSpacesAroundParentheses(String expression) {
+        // Add a space before and after each parenthesis
+        expression = expression.replaceAll("\\(", " ( ");
+        expression = expression.replaceAll("\\)", " ) ");
+        
+        // Replace multiple spaces with a single space to clean up
+        expression = expression.trim().replaceAll("\\s+", " ");
+        
+        return expression;
     }
 
     /**
