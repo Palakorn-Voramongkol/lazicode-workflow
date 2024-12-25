@@ -1,15 +1,18 @@
 package com.lazicode.workflow.expressions;
 
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.Collections;
 
 import com.lazicode.workflow.exceptions.InvalidExpression;
+import com.lazicode.workflow.expressions.evaluators.PostfixLogic;
 
 
 public class LogicExpression extends Expression {
 
     private static final Set<String> SUPPORTED_OPERATORS;
+    private boolean isShortCircuit = true;
 
     static {
         Set<String> ops = new HashSet<>();
@@ -24,26 +27,37 @@ public class LogicExpression extends Expression {
     }
     
 
-    public LogicExpression(String expressionString) throws InvalidExpression {
-        super(expressionString);
 
+    // Main constructor with initialization logic
+    public LogicExpression(String expressionString) throws InvalidExpression {
+        this(expressionString, false); // Default to non-short-circuit evaluation
+    }
+
+    public LogicExpression(String expressionString, boolean isShortCircuit) throws InvalidExpression {
+        super(expressionString);
+        this.isShortCircuit = isShortCircuit;
+        initializeExpression(expressionString);
+    }
+
+
+    // Helper method to centralize initialization logic
+    private void initializeExpression(String expressionString) throws InvalidExpression {
         String expressionType = determineExpressionType(expressionString, SUPPORTED_OPERATORS);
 
-        if (expressionType.equals("unknown")) {
+        if ("unknown".equals(expressionType)) {
             throw new InvalidExpression(
-                    "Invalid expression type, allow only valid infix or postfix logical expressions.");
-        }
-        if (expressionType.equals("postfix")) {
-            validatePostfixExpression(expressionString, SUPPORTED_OPERATORS); // Validate before proceeding
-            infixExpression = convertPostfixToInfix(expressionString); // Convert and store the infix expression
-            postfixExpression = expressionString; // Store the original postfix expression
-        } else {
-            postfixExpression = convertInfixToPostfix(expressionString); // Convert and store the infix expression
-            validatePostfixExpression(postfixExpression, SUPPORTED_OPERATORS); // Validate before proceeding
-            infixExpression = convertPostfixToInfix(postfixExpression); // Convert and store the infix expression
-                                                                        // beautifully
+                "Invalid expression type, allow only valid infix or postfix logical expressions.");
         }
 
+        if ("postfix".equals(expressionType)) {
+            validatePostfixExpression(expressionString, SUPPORTED_OPERATORS);
+            infixExpression = convertPostfixToInfix(expressionString);
+            postfixExpression = expressionString;
+        } else {
+            postfixExpression = convertInfixToPostfix(expressionString);
+            validatePostfixExpression(postfixExpression, SUPPORTED_OPERATORS);
+            infixExpression = convertPostfixToInfix(postfixExpression); // Make the infixExpression more beautiful and correct parenthesis
+        }
     }
 
     @Override
@@ -137,8 +151,10 @@ public class LogicExpression extends Expression {
         return "LogicExpression{" +
                 "expressionString='" + getExpressionString() + '\'' +
                 ", infixExpression='" + infixExpression + '\'' +
-                ", variables=" + getVariables() +
-                ", variableValues=" + getVariableValues() +
+                ", postExpression='" + postfixExpression + '\'' +
+                ", variables=" + getVariables() + '\'' +
+                ", variableValues=" + getVariableValues() + '\'' +
+                ", shortCircuit=" + this.isShortCircuit + '\'' +
                 ", output=" + getOutput() +
                 '}';
     }
@@ -146,6 +162,16 @@ public class LogicExpression extends Expression {
 
     @Override
     protected Object performCalculation() {
-        return this.calculate();
+        // Cast variableValues to HashMap<String, Boolean>
+        @SuppressWarnings("unchecked")
+        HashMap<String, Boolean> booleanValues = (HashMap<String, Boolean>) (HashMap<?, ?>) getVariableValues();
+        Boolean result;
+        // Call the evalShortCircuit function
+        if (this.isShortCircuit) {
+            result = PostfixLogic.evalShortCircuit(this.postfixExpression, booleanValues);
+        } else {
+            result = PostfixLogic.eval(this.postfixExpression, booleanValues);
+        }
+        return result;
     }
 }
